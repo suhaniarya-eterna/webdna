@@ -1,0 +1,14 @@
+{
+  "placeholderImages": [
+    {
+      "id": "dna-hero",
+      "description": "Background DNA structural context",
+      "imageUrl": "https://picsum.photos/seed/dna1/1920/1080",
+      "imageHint": "DNA biotechnology"
+    }
+  ],
+  "dnaRepairSequence": {
+    "directory": "/images/frames/",
+    "fallbackImage": "https://picsum.photos/seed/dna-fallback/1200/800"
+  }
+}
