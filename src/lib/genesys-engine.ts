@@ -249,7 +249,7 @@ class GeneSysEngine {
     // Stage 1: Detection
     this.emit({ 
       type: 'stage', 
-      message: `System detecting ${type.replace('_', ' ')} vector in ${patchInfo.file}...`, 
+      message: `SCANNED_VECTOR: Analyzing ${type.replace('_', ' ')} signature...`, 
       mutationType: type,
       stage: 'detection',
       targetFile: patchInfo.file
@@ -257,12 +257,12 @@ class GeneSysEngine {
     
     this.updateFile(patchInfo.file, { status: 'degraded' });
 
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 1400));
 
     // Stage 2: Response (Diffing)
     this.emit({ 
       type: 'stage', 
-      message: `Generating adaptive Git-diff response for ${type}...`, 
+      message: `EVOLVING_LOGIC: Generating Git-diff antibodies for ${patchInfo.file}...`, 
       mutationType: type,
       stage: 'response',
       targetFile: patchInfo.file
@@ -276,6 +276,7 @@ class GeneSysEngine {
       return line;
     });
 
+    // Strategy: Insert additions in small bursts
     const splitIdx = Math.min(newLines.length, 3);
     const finalLines = [
       ...newLines.slice(0, splitIdx),
@@ -286,15 +287,15 @@ class GeneSysEngine {
     this.updateFile(patchInfo.file, { 
       lines: finalLines, 
       status: 'patched',
-      lastCommit: `auto_patch_${type.toLowerCase()}`
+      lastCommit: `patch_${type.toLowerCase().slice(0, 8)}`
     });
 
-    await new Promise(r => setTimeout(r, 1800));
+    await new Promise(r => setTimeout(r, 2000));
 
     // Stage 3: Learning (Reinforce)
     this.emit({ 
       type: 'stage', 
-      message: `Commiting remediation. Threat immunity confirmed for ${type}.`, 
+      message: `REINFORCING: Immunity committed. Stabilizing core subsystems.`, 
       mutationType: type,
       stage: 'learning',
       targetFile: patchInfo.file
@@ -305,11 +306,11 @@ class GeneSysEngine {
       lines: finalLines.map(l => (l.type === 'added' || l.type === 'removed') ? { ...l, type: 'modified' as const } : l)
     });
 
-    const antibodyId = `${type}_v${(Math.random() * 10).toFixed(1)}`;
-    this.memory[type] = `Antibody: ${antibodyId}`;
+    const antibodyId = `ABS-${type.slice(0, 3)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+    this.memory[type] = antibodyId;
     
-    await new Promise(r => setTimeout(r, 800));
-    this.emit({ type: 'success', message: `System Core Integrity Restored. ${type} Neutralized.`, stage: 'idle' });
+    await new Promise(r => setTimeout(r, 1000));
+    this.emit({ type: 'success', message: `CORE_STABLE: ${type} neutralized successfully.`, stage: 'idle' });
   }
 }
 

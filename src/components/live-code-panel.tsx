@@ -41,7 +41,7 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
   useEffect(() => {
     if (scrollRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
       
       if (isNearBottom || currentStage !== 'idle') {
         scrollRef.current.scrollTo({
@@ -54,15 +54,15 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
 
   const getColorClass = (type?: string) => {
     switch (type) {
-      case 'comment': return 'text-white/30 italic';
-      case 'keyword': return 'text-primary font-bold';
-      case 'function': return 'text-blue-400';
-      case 'string': return 'text-green-400';
-      case 'variable': return 'text-purple-400';
-      case 'added': return 'text-emerald-400 bg-emerald-400/10 border-l-2 border-emerald-400 px-1';
-      case 'removed': return 'text-rose-400 bg-rose-400/10 border-l-2 border-rose-400 line-through opacity-50 px-1';
-      case 'modified': return 'text-yellow-400 bg-yellow-400/10 border-l-2 border-yellow-400 px-1';
-      default: return 'text-white/70';
+      case 'comment': return 'text-white/20 italic';
+      case 'keyword': return 'text-primary/90 font-bold';
+      case 'function': return 'text-blue-400/80';
+      case 'string': return 'text-green-400/80';
+      case 'variable': return 'text-purple-400/80';
+      case 'added': return 'text-emerald-400 bg-emerald-400/10 px-1 font-bold';
+      case 'removed': return 'text-rose-400 bg-rose-400/10 line-through opacity-40 px-1';
+      case 'modified': return 'text-yellow-400 bg-yellow-400/5 px-1';
+      default: return 'text-white/60';
     }
   };
 
@@ -71,36 +71,36 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
 
   return (
     <div className={cn(
-      "flex flex-col bg-[#0F0B0A] border border-white/10 rounded-xl overflow-hidden shadow-2xl transition-all duration-500",
+      "flex flex-col bg-[#0F0B0A] border border-white/5 rounded-xl overflow-hidden shadow-2xl transition-all duration-700",
       isFullScreen ? "h-full w-full" : "h-full min-h-0"
     )}>
       {/* Top Header */}
-      <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/10 bg-white/[0.02] shrink-0">
-        <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
-          <div className="flex items-center gap-2 px-2 py-1 bg-white/5 rounded text-[9px] md:text-[10px] font-mono text-white/60 shrink-0">
-            <GitBranch className="w-3 h-3 text-primary" />
-            <span className="hidden xs:inline">main</span>
+      <div className="flex items-center justify-between p-3 border-b border-white/5 bg-white/[0.01] shrink-0">
+        <div className="flex items-center gap-4 overflow-hidden">
+          <div className="flex items-center gap-2 px-2 py-0.5 bg-white/5 rounded text-[10px] font-mono text-white/40 shrink-0 border border-white/5">
+            <GitBranch className="w-3 h-3 text-primary/60" />
+            <span className="hidden xs:inline uppercase tracking-tighter">main</span>
           </div>
-          <div className="text-[9px] md:text-[10px] font-mono text-white/30 flex items-center gap-1 md:gap-2 truncate">
-            <span className="hidden sm:inline">genesys-core</span>
-            <ChevronRight className="w-3 h-3 shrink-0 hidden sm:inline" />
-            <span className="text-white/60 truncate">{currentFile?.path}</span>
+          <div className="text-[10px] font-mono text-white/20 flex items-center gap-2 truncate">
+            <span className="hidden sm:inline">genesys_engine</span>
+            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span className="text-white/40 truncate">{currentFile?.path}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <div className={cn(
-            "flex items-center gap-2 px-2 md:px-3 py-1 rounded-full border text-[8px] md:text-[9px] font-bold tracking-widest uppercase transition-all",
-            currentStage === 'idle' ? "bg-green-500/5 border-green-500/20 text-green-500" : "bg-red-500/5 border-red-500/20 text-red-500 animate-pulse"
+            "flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-bold tracking-[0.2em] uppercase transition-all duration-500",
+            currentStage === 'idle' ? "bg-green-500/5 border-green-500/10 text-green-500/60" : "bg-red-500/5 border-red-500/10 text-red-400 animate-pulse"
           )}>
-            <div className={cn("w-1.5 h-1.5 rounded-full", currentStage === 'idle' ? "bg-green-500" : "bg-red-500 animate-ping")} />
-            <span className="hidden xs:inline">{currentStage === 'idle' ? "Repo Stable" : currentStage}</span>
+            <div className={cn("w-1 h-1 rounded-full", currentStage === 'idle' ? "bg-green-500/40" : "bg-red-400 animate-ping")} />
+            <span>{currentStage === 'idle' ? "STABLE" : currentStage}</span>
           </div>
           {isFullScreen && onClose && (
             <button 
               onClick={onClose} 
-              className="p-1.5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-colors ml-1"
+              className="p-1.5 hover:bg-white/5 rounded-full text-white/20 hover:text-white transition-colors"
             >
-              <X className="w-4 h-4 md:w-5 md:h-5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -108,16 +108,16 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* File Tree Sidebar */}
-        <div className="hidden lg:flex w-64 border-r border-white/10 bg-black/40 flex-col p-3 gap-1 overflow-y-auto shrink-0">
-          <div className="flex items-center gap-2 px-2 py-2 mb-2">
-            <Folder className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Repository Browser</span>
+        <div className="hidden lg:flex w-56 border-r border-white/5 bg-black/40 flex-col p-3 gap-1 overflow-y-auto shrink-0 scrollbar-hide">
+          <div className="flex items-center gap-2 px-2 py-2 mb-2 border-b border-white/5">
+            <Folder className="w-3 h-3 text-primary/40" />
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Filesystem</span>
           </div>
           
           {folders.map(folder => (
-            <div key={folder} className="space-y-1 mb-4">
-              <div className="flex items-center gap-2 px-2 text-[9px] font-bold text-white/20 uppercase tracking-tighter">
-                <ChevronRight className="w-3 h-3" />
+            <div key={folder} className="space-y-0.5 mb-4">
+              <div className="flex items-center gap-2 px-2 text-[8px] font-bold text-white/10 uppercase tracking-tighter mb-1">
+                <ChevronRight className="w-2.5 h-2.5" />
                 <span>{folder}</span>
               </div>
               {Object.values(files).filter(f => f.path.startsWith(`/${folder}`)).map((file) => (
@@ -125,20 +125,23 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
                   key={file.name}
                   onClick={() => setActiveFile(file.name)}
                   className={cn(
-                    "w-full flex items-center justify-between px-3 py-1.5 rounded text-[10px] lg:text-[11px] font-mono transition-all group",
-                    activeFile === file.name ? "bg-primary/10 text-primary" : "text-white/40 hover:bg-white/5 hover:text-white"
+                    "w-full flex items-center justify-between px-2.5 py-1.5 rounded text-[10px] font-mono transition-all group",
+                    activeFile === file.name ? "bg-primary/5 text-primary" : "text-white/20 hover:bg-white/[0.02] hover:text-white/60"
                   )}
                 >
-                  <div className="flex items-center gap-2.5 truncate">
-                    <FileCode className={cn("w-3.5 h-3.5 shrink-0", activeFile === file.name ? "text-primary" : "text-white/20")} />
+                  <div className="flex items-center gap-2 truncate">
+                    <FileCode className={cn("w-3 h-3 shrink-0", activeFile === file.name ? "text-primary/60" : "text-white/10")} />
                     <span className="truncate">{file.name}</span>
                   </div>
                   {file.status !== 'original' && (
-                    <div className={cn(
-                      "w-1.5 h-1.5 rounded-full shrink-0",
-                      file.status === 'degraded' ? "bg-red-500 animate-pulse" : 
-                      file.status === 'patched' ? "bg-blue-400" : "bg-green-500"
-                    )} />
+                    <motion.div 
+                      layoutId={`status-${file.name}`}
+                      className={cn(
+                        "w-1 h-1 rounded-full shrink-0",
+                        file.status === 'degraded' ? "bg-red-500 animate-pulse" : 
+                        file.status === 'patched' ? "bg-blue-400" : "bg-green-500/40"
+                      )} 
+                    />
                   )}
                 </button>
               ))}
@@ -150,32 +153,34 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
         <div className="flex-1 flex flex-col min-w-0 bg-[#0A0807] relative">
           <div 
             ref={scrollRef}
-            className="flex-1 p-3 md:p-6 lg:p-8 font-mono text-[11px] sm:text-[12px] md:text-[13px] leading-relaxed overflow-y-auto selection:bg-primary/30"
+            className="flex-1 p-4 md:p-8 font-mono text-[11px] md:text-[12px] leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-white/5"
           >
-            <AnimatePresence initial={false}>
+            <AnimatePresence mode="popLayout" initial={false}>
               {currentFile?.lines.map((line, idx) => (
                 <motion.div
-                  key={line.id + idx}
-                  initial={line.type === 'added' ? { opacity: 0, x: -10, backgroundColor: 'rgba(16, 185, 129, 0.1)' } : { opacity: 0 }}
-                  animate={{ opacity: 1, x: 0, backgroundColor: 'transparent' }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  key={line.id}
+                  layout
+                  initial={{ opacity: 0, x: -5 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.3, delay: idx * 0.01 }}
                   className={cn(
-                    "flex gap-3 md:gap-6 group hover:bg-white/[0.02] py-0.5 border-l-2",
-                    line.type === 'added' ? "border-emerald-500 bg-emerald-500/[0.04]" :
-                    line.type === 'removed' ? "border-rose-500 bg-rose-500/[0.04]" :
-                    line.type === 'modified' ? "border-yellow-500 bg-yellow-500/[0.04]" : "border-transparent"
+                    "flex gap-4 group hover:bg-white/[0.01] py-0.5 border-l-2 transition-colors",
+                    line.type === 'added' ? "border-emerald-500/40 bg-emerald-500/[0.03]" :
+                    line.type === 'removed' ? "border-rose-500/40 bg-rose-500/[0.03]" :
+                    line.type === 'modified' ? "border-yellow-500/40 bg-yellow-500/[0.02]" : "border-transparent"
                   )}
                 >
-                  <span className="w-6 md:w-10 text-right text-white/10 select-none text-[9px] md:text-[11px] shrink-0">{idx + 1}</span>
+                  <span className="w-8 text-right text-white/5 select-none text-[10px] shrink-0 font-light">{idx + 1}</span>
                   <span className={cn(getColorClass(line.type), "relative whitespace-pre font-medium")}>
-                    {line.type === 'added' && <span className="mr-1 md:mr-2 text-emerald-500/50">+</span>}
-                    {line.type === 'removed' && <span className="mr-1 md:mr-2 text-rose-500/50">-</span>}
+                    {line.type === 'added' && <span className="mr-2 text-emerald-500/30 font-bold">+</span>}
+                    {line.type === 'removed' && <span className="mr-2 text-rose-500/30 font-bold">-</span>}
                     {line.text}
                     {idx === currentFile.lines.length - 1 && (
                       <motion.span 
                         animate={{ opacity: [1, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.8 }}
-                        className="inline-block w-1.5 md:w-2 h-3.5 md:h-4 bg-primary ml-1 align-middle"
+                        transition={{ repeat: Infinity, duration: 1 }}
+                        className="inline-block w-1.5 h-3.5 bg-primary/40 ml-1 align-middle"
                       />
                     )}
                   </span>
@@ -183,23 +188,26 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
               ))}
             </AnimatePresence>
           </div>
+          
+          {/* Subtle Scanline Overlay */}
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.02)_50%)] bg-[size:100%_4px] opacity-20" />
         </div>
       </div>
 
       {/* Status Bar */}
-      <div className="p-2 md:p-3 border-t border-white/5 bg-black/60 flex justify-between items-center px-4 md:px-8 shrink-0">
-        <div className="flex gap-4 md:gap-8 overflow-hidden">
+      <div className="p-2 border-t border-white/5 bg-black/60 flex justify-between items-center px-6 shrink-0">
+        <div className="flex gap-6 overflow-hidden">
           <div className="flex items-center gap-2 shrink-0">
-            <Search className={cn("w-3.5 h-3.5", currentStage === 'detection' ? "text-primary animate-pulse" : "text-white/20")} />
-            <span className="hidden sm:inline text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/30">Analysis Engine</span>
+            <Search className={cn("w-3 h-3 transition-colors", currentStage === 'detection' ? "text-primary animate-pulse" : "text-white/10")} />
+            <span className="text-[8px] uppercase tracking-[0.2em] text-white/20 font-bold">Heuristic Engine</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <ShieldCheck className={cn("w-3.5 h-3.5", currentStage === 'learning' ? "text-green-400" : "text-white/20")} />
-            <span className="hidden sm:inline text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/30">Remediation</span>
+            <ShieldCheck className={cn("w-3 h-3 transition-colors", currentStage === 'learning' ? "text-green-500/60" : "text-white/10")} />
+            <span className="text-[8px] uppercase tracking-[0.2em] text-white/20 font-bold">Auto-Remediation</span>
           </div>
         </div>
-        <div className="text-[8px] md:text-[10px] font-mono text-white/20 tracking-widest shrink-0 truncate ml-4">
-          UTF-8 // GENESYS_CORE_4.2.0
+        <div className="text-[8px] font-mono text-white/10 tracking-widest shrink-0 truncate ml-4 uppercase">
+          GENESYS_NODE_42 // {currentFile?.language}
         </div>
       </div>
     </div>
