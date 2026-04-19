@@ -33,208 +33,215 @@ export type MutationType =
   | 'ZERO_DAY' | 'RANSOMWARE' | 'DATA_EXFIL';
 
 const INITIAL_FILES: Record<string, RepoFile> = {
-  'firewall.py': {
-    name: 'firewall.py',
-    path: '/core/firewall.py',
+  'config.py': {
+    name: 'config.py',
+    path: '/app/config.py',
     language: 'python',
     status: 'original',
-    lastCommit: 'init_security_v1.0',
+    lastCommit: 'env_setup_v1.0',
     updatedAt: '2h ago',
     lines: [
-      { id: 'f1', text: 'import genesys_net as net', type: 'keyword' },
-      { id: 'f2', text: 'from genesys.core.config import SEC_LEVEL', type: 'keyword' },
-      { id: 'f3', text: '', type: 'variable' },
-      { id: 'f4', text: 'class IngressFirewall:', type: 'keyword' },
-      { id: 'f5', text: '    def __init__(self):', type: 'function' },
-      { id: 'f6', text: '        self.rules = []', type: 'variable' },
-      { id: 'f7', text: '        self.trust_level = SEC_LEVEL.HIGH', type: 'variable' },
-      { id: 'f8', text: '', type: 'variable' },
-      { id: 'f9', text: '    def filter_traffic(self, request):', type: 'function' },
-      { id: 'f10', text: '        # Basic filtering logic', type: 'comment' },
-      { id: 'f11', text: '        if request.origin == "BLOCKED_IP":', type: 'keyword' },
-      { id: 'f12', text: '            return net.DROP', type: 'variable' },
-      { id: 'f13', text: '        ', type: 'variable' },
-      { id: 'f14', text: '        # Default allow if no threat is detected', type: 'comment' },
-      { id: 'f15', text: '        return net.ALLOW', type: 'variable' },
+      { id: 'c1', text: 'import os', type: 'keyword' },
+      { id: 'c2', text: '', type: 'variable' },
+      { id: 'c3', text: 'class Config:', type: 'keyword' },
+      { id: 'c4', text: '    SECRET_KEY = os.getenv("SECRET_KEY", "dev_secret")', type: 'variable' },
+      { id: 'c5', text: '    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///site.db")', type: 'variable' },
+      { id: 'c6', text: '    SQLALCHEMY_TRACK_MODIFICATIONS = False', type: 'variable' },
+      { id: 'c7', text: '', type: 'variable' },
+      { id: 'c8', text: '    RATE_LIMIT = 100', type: 'variable' },
+      { id: 'c9', text: '    RATE_WINDOW = 60', type: 'variable' },
     ]
   },
-  'input_validator.js': {
-    name: 'input_validator.js',
-    path: '/security/input_validator.js',
-    language: 'javascript',
+  'firewall.py': {
+    name: 'firewall.py',
+    path: '/app/firewall.py',
+    language: 'python',
     status: 'original',
-    lastCommit: 'base_validation',
-    updatedAt: '3h ago',
-    lines: [
-      { id: 'iv1', text: 'import { SecurityError } from "./errors";', type: 'keyword' },
-      { id: 'iv2', text: 'import * as logger from "../utils/logger";', type: 'keyword' },
-      { id: 'iv3', text: '', type: 'variable' },
-      { id: 'iv4', text: 'export const sanitizeInput = (payload) => {', type: 'function' },
-      { id: 'iv5', text: '  if (!payload) return null;', type: 'keyword' },
-      { id: 'iv6', text: '  ', type: 'variable' },
-      { id: 'iv7', text: '  // Simple string conversion as baseline', type: 'comment' },
-      { id: 'iv8', text: '  let cleaned = String(payload);', type: 'variable' },
-      { id: 'iv9', text: '  ', type: 'variable' },
-      { id: 'iv10', text: '  return cleaned;', type: 'variable' },
-      { id: 'iv11', text: '};', type: 'function' },
-    ]
-  },
-  'auth_guard.js': {
-    name: 'auth_guard.js',
-    path: '/security/auth_guard.js',
-    language: 'javascript',
-    status: 'original',
-    lastCommit: 'jwt_verify_fix',
+    lastCommit: 'baseline_sec',
     updatedAt: '1h ago',
     lines: [
-      { id: 'a1', text: 'const genesys_auth = require("@genesys/auth");', type: 'keyword' },
-      { id: 'a2', text: '', type: 'variable' },
-      { id: 'a3', text: 'export const sessionGuard = async (req, res, next) => {', type: 'function' },
-      { id: 'a4', text: '  const token = req.headers["x-access-token"];', type: 'variable' },
-      { id: 'a5', text: '  ', type: 'variable' },
-      { id: 'a6', text: '  if (!token) {', type: 'keyword' },
-      { id: 'a7', text: '    return res.status(401).send("UNAUTHORIZED");', type: 'variable' },
-      { id: 'a8', text: '  }', type: 'keyword' },
-      { id: 'a9', text: '  ', type: 'variable' },
-      { id: 'a10', text: '  try {', type: 'keyword' },
-      { id: 'a11', text: '    req.user = await genesys_auth.verify(token);', type: 'variable' },
-      { id: 'a12', text: '    next();', type: 'function' },
-      { id: 'a13', text: '  } catch (err) {', type: 'keyword' },
-      { id: 'a14', text: '    return res.status(403).send("INVALID_SESSION");', type: 'variable' },
-      { id: 'a15', text: '  }', type: 'keyword' },
-      { id: 'a16', text: '};', type: 'function' },
+      { id: 'f1', text: 'import time', type: 'keyword' },
+      { id: 'f2', text: 'from flask import request, abort, current_app', type: 'keyword' },
+      { id: 'f3', text: '', type: 'variable' },
+      { id: 'f4', text: 'request_log = {}', type: 'variable' },
+      { id: 'f5', text: 'BLOCKED_IPS = set()', type: 'variable' },
+      { id: 'f6', text: '', type: 'variable' },
+      { id: 'f7', text: 'def get_ip():', type: 'function' },
+      { id: 'f8', text: '    return request.headers.get("X-Forwarded-For", request.remote_addr)', type: 'variable' },
+      { id: 'f9', text: '', type: 'variable' },
+      { id: 'f10', text: 'def rate_limit():', type: 'function' },
+      { id: 'f11', text: '    ip = get_ip()', type: 'variable' },
+      { id: 'f12', text: '    now = time.time()', type: 'variable' },
+      { id: 'f13', text: '    if ip in BLOCKED_IPS:', type: 'keyword' },
+      { id: 'f14', text: '        abort(403)', type: 'variable' },
+      { id: 'f15', text: '    # Basic in-memory rate limiting', type: 'comment' },
+      { id: 'f16', text: '    if ip not in request_log:', type: 'keyword' },
+      { id: 'f17', text: '        request_log[ip] = []', type: 'variable' },
+      { id: 'f18', text: '    return True', type: 'keyword' },
     ]
   },
-  'traffic_filter.py': {
-    name: 'traffic_filter.py',
-    path: '/network/traffic_filter.py',
+  'models.py': {
+    name: 'models.py',
+    path: '/app/models.py',
     language: 'python',
     status: 'original',
-    lastCommit: 'ingress_optimize',
-    updatedAt: '12h ago',
+    lastCommit: 'db_schema_init',
+    updatedAt: '4h ago',
     lines: [
-      { id: 't1', text: 'import time', type: 'keyword' },
-      { id: 't2', text: 'import genesys_io as gio', type: 'keyword' },
-      { id: 't3', text: '', type: 'variable' },
-      { id: 't4', text: 'def handle_ingress(stream):', type: 'function' },
-      { id: 't5', text: '    for packet in stream:', type: 'keyword' },
-      { id: 't6', text: '        # Evaluate packet payload', type: 'comment' },
-      { id: 't7', text: '        if len(packet.data) > 65535:', type: 'keyword' },
-      { id: 't8', text: '            gio.drop_packet(packet.id)', type: 'function' },
-      { id: 't9', text: '            continue', type: 'keyword' },
-      { id: 't10', text: '        ', type: 'variable' },
-      { id: 't11', text: '        gio.forward(packet)', type: 'function' },
+      { id: 'm1', text: 'from .extensions import db, bcrypt', type: 'keyword' },
+      { id: 'm2', text: '', type: 'variable' },
+      { id: 'm3', text: 'class User(db.Model):', type: 'keyword' },
+      { id: 'm4', text: '    id = db.Column(db.Integer, primary_key=True)', type: 'variable' },
+      { id: 'm5', text: '    email = db.Column(db.String(120), unique=True, nullable=False)', type: 'variable' },
+      { id: 'm6', text: '    password_hash = db.Column(db.String(128), nullable=False)', type: 'variable' },
+      { id: 'm7', text: '', type: 'variable' },
+      { id: 'm8', text: '    def set_password(self, password):', type: 'function' },
+      { id: 'm9', text: '        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")', type: 'variable' },
     ]
   },
-  'learning_model.py': {
-    name: 'learning_model.py',
-    path: '/ai/learning_model.py',
+  'auth.py': {
+    name: 'auth.py',
+    path: '/app/auth.py',
     language: 'python',
     status: 'original',
-    lastCommit: 'neural_weights_update',
-    updatedAt: '1d ago',
+    lastCommit: 'jwt_logic_base',
+    updatedAt: '3h ago',
     lines: [
-      { id: 'l1', text: 'import genesys_ai as ai', type: 'keyword' },
-      { id: 'l2', text: 'from genesys_ai.models import HeuristicNet', type: 'keyword' },
-      { id: 'l3', text: '', type: 'variable' },
-      { id: 'l4', text: 'engine = HeuristicNet.load("genesis_core_v4")', type: 'variable' },
-      { id: 'l5', text: '', type: 'variable' },
-      { id: 'l6', text: 'def analyze_threat_vector(vector):', type: 'function' },
-      { id: 'l7', text: '    score = engine.predict(vector)', type: 'variable' },
-      { id: 'l8', text: '    # Basic anomaly detection', type: 'comment' },
-      { id: 'l9', text: '    return score > 0.85', type: 'keyword' },
+      { id: 'a1', text: 'import jwt', type: 'keyword' },
+      { id: 'a2', text: 'import datetime', type: 'keyword' },
+      { id: 'a3', text: 'from flask import current_app, request', type: 'keyword' },
+      { id: 'a4', text: '', type: 'variable' },
+      { id: 'a5', text: 'def generate_token(user_id):', type: 'function' },
+      { id: 'a6', text: '    payload = {', type: 'variable' },
+      { id: 'a7', text: '        "user_id": user_id,', type: 'variable' },
+      { id: 'a8', text: '        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)', type: 'variable' },
+      { id: 'a9', text: '    }', type: 'variable' },
+      { id: 'a10', text: '    return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")', type: 'variable' },
+    ]
+  },
+  'routes.py': {
+    name: 'routes.py',
+    path: '/app/routes.py',
+    language: 'python',
+    status: 'original',
+    lastCommit: 'api_endpoints_v1',
+    updatedAt: '5h ago',
+    lines: [
+      { id: 'r1', text: 'from flask import Blueprint, request, jsonify', type: 'keyword' },
+      { id: 'r2', text: 'from .models import User', type: 'keyword' },
+      { id: 'r3', text: 'from .extensions import db', type: 'keyword' },
+      { id: 'r4', text: '', type: 'variable' },
+      { id: 'r5', text: 'bp = Blueprint("routes", __name__)', type: 'variable' },
+      { id: 'r6', text: '', type: 'variable' },
+      { id: 'r7', text: '@bp.route("/register", methods=["POST"])', type: 'function' },
+      { id: 'r8', text: 'def register():', type: 'function' },
+      { id: 'r9', text: '    data = request.json', type: 'variable' },
+      { id: 'r10', text: '    user = User(email=data.get("email"))', type: 'variable' },
+      { id: 'r11', text: '    user.set_password(data.get("password"))', type: 'variable' },
+      { id: 'r12', text: '    db.session.add(user)', type: 'variable' },
+      { id: 'r13', text: '    db.session.commit()', type: 'variable' },
     ]
   }
 };
 
 const MUTATION_PATCHES: Record<MutationType, { file: string, added: CodeLine[], removedIds: string[] }> = {
   SQL_INJECTION: {
-    file: 'input_validator.js',
-    removedIds: ['iv8', 'iv10'],
+    file: 'models.py',
+    removedIds: [],
     added: [
-      { id: 'sql-1', text: '  const sqlPattern = /([\'\"\\;\\-\\-\\s])/g;', type: 'added' },
-      { id: 'sql-2', text: '  if (sqlPattern.test(payload)) {', type: 'added' },
-      { id: 'sql-3', text: '    logger.alert("SQLi_VECTOR_DETECTED", payload);', type: 'added' },
-      { id: 'sql-4', text: '    throw new SecurityError("SQL_INJECTION_ATTEMPT");', type: 'added' },
-      { id: 'sql-5', text: '  }', type: 'added' },
-      { id: 'sql-6', text: '  let cleaned = String(payload).replace(sqlPattern, "");', type: 'added' },
-      { id: 'sql-7', text: '  return cleaned;', type: 'added' },
+      { id: 'sqli-1', text: '    @staticmethod', type: 'added' },
+      { id: 'sqli-2', text: '    def safe_find_by_email(email):', type: 'added' },
+      { id: 'sqli-3', text: '        # Parameterized query enforcement', type: 'added' },
+      { id: 'sqli-4', text: '        return User.query.filter_by(email=email).first()', type: 'added' },
     ]
   },
   XSS: {
-    file: 'input_validator.js',
-    removedIds: [],
-    added: [
-      { id: 'xss-1', text: '  const xssRegEx = /<script.*?>.*?<\\/script>/gi;', type: 'added' },
-      { id: 'xss-2', text: '  if (xssRegEx.test(cleaned)) {', type: 'added' },
-      { id: 'xss-3', text: '    logger.warn("XSS_ATTEMPT_INTERCEPTED");', type: 'added' },
-      { id: 'xss-4', text: '    cleaned = cleaned.replace(/</g, "&lt;").replace(/>/g, "&gt;");', type: 'added' },
-      { id: 'xss-5', text: '  }', type: 'added' },
-    ]
-  },
-  CSRF: {
-    file: 'auth_guard.js',
-    removedIds: [],
-    added: [
-      { id: 'csrf-1', text: '  const csrfToken = req.headers["x-csrf-token"];', type: 'added' },
-      { id: 'csrf-2', text: '  if (req.method !== "GET" && !genesys_auth.validateCSRF(csrfToken)) {', type: 'added' },
-      { id: 'csrf-3', text: '    return res.status(403).send("CSRF_TOKEN_INVALID");', type: 'added' },
-      { id: 'csrf-4', text: '  }', type: 'added' },
-    ]
-  },
-  DDOS: {
-    file: 'traffic_filter.py',
-    removedIds: ['t7', 't8'],
-    added: [
-      { id: 'ddos-1', text: '        # Adaptive rate limiting based on packet frequency', type: 'added' },
-      { id: 'ddos-2', text: '        if packet.is_flood() or stream.get_rate() > 10000:', type: 'added' },
-      { id: 'ddos-3', text: '            gio.quarantine(packet.origin_ip)', type: 'added' },
-      { id: 'ddos-4', text: '            return gio.REJECT', type: 'added' },
-    ]
-  },
-  BOT_SWARM: {
-    file: 'traffic_filter.py',
-    removedIds: [],
-    added: [
-      { id: 'bot-1', text: '        if packet.fingerprint() in gio.BOT_SIGNATURES:', type: 'added' },
-      { id: 'bot-2', text: '            gio.challenge_captcha(packet.origin_ip)', type: 'added' },
-      { id: 'bot-3', text: '            return gio.REDIRECT_CHALLENGE', type: 'added' },
-    ]
-  },
-  API_ABUSE: {
     file: 'firewall.py',
     removedIds: [],
     added: [
-      { id: 'api-1', text: '        if net.check_rate_limit(request.api_key):', type: 'added' },
-      { id: 'api-2', text: '            return net.THROTTLE_429', type: 'added' },
+      { id: 'xss-1', text: 'def secure_headers(response):', type: 'added' },
+      { id: 'xss-2', text: '    response.headers["X-Content-Type-Options"] = "nosniff"', type: 'added' },
+      { id: 'xss-3', text: '    response.headers["X-Frame-Options"] = "DENY"', type: 'added' },
+      { id: 'xss-4', text: '    response.headers["X-XSS-Protection"] = "1; mode=block"', type: 'added' },
+      { id: 'xss-5', text: '    return response', type: 'added' },
+    ]
+  },
+  CSRF: {
+    file: 'firewall.py',
+    removedIds: [],
+    added: [
+      { id: 'csrf-1', text: 'def validate_csrf():', type: 'added' },
+      { id: 'csrf-2', text: '    token = request.headers.get("X-CSRF-Token")', type: 'added' },
+      { id: 'csrf-3', text: '    if not token or not verify_csrf(token):', type: 'added' },
+      { id: 'csrf-4', text: '        abort(403, "CSRF Token missing or invalid")', type: 'added' },
+    ]
+  },
+  DDOS: {
+    file: 'firewall.py',
+    removedIds: ['f15', 'f16', 'f17'],
+    added: [
+      { id: 'redis-1', text: 'import redis', type: 'added' },
+      { id: 'redis-2', text: 'r = redis.Redis.from_url(current_app.config["REDIS_URL"])', type: 'added' },
+      { id: 'redis-3', text: '', type: 'added' },
+      { id: 'redis-4', text: 'def rate_limit():', type: 'added' },
+      { id: 'redis-5', text: '    ip = get_ip()', type: 'added' },
+      { id: 'redis-6', text: '    key = f"rate:{ip}"', type: 'added' },
+      { id: 'redis-7', text: '    count = r.incr(key)', type: 'added' },
+      { id: 'redis-8', text: '    if count == 1: r.expire(key, 60)', type: 'added' },
+      { id: 'redis-9', text: '    if count > 100: abort(429, "Too many requests")', type: 'added' },
+    ]
+  },
+  BOT_SWARM: {
+    file: 'firewall.py',
+    removedIds: [],
+    added: [
+      { id: 'bot-1', text: 'def detect_bot_signature():', type: 'added' },
+      { id: 'bot-2', text: '    ua = request.headers.get("User-Agent")', type: 'added' },
+      { id: 'bot-3', text: '    if "headless" in ua.lower() or "phantomjs" in ua.lower():', type: 'added' },
+      { id: 'bot-4', text: '        BLOCKED_IPS.add(get_ip())', type: 'added' },
+      { id: 'bot-5', text: '        abort(403, "Bot Signature Detected")', type: 'added' },
+    ]
+  },
+  API_ABUSE: {
+    file: 'config.py',
+    removedIds: ['c8'],
+    added: [
+      { id: 'api-1', text: '    # Tightened Rate Limit for API Abuse Prevention', type: 'added' },
+      { id: 'api-2', text: '    RATE_LIMIT = 20', type: 'added' },
+      { id: 'api-3', text: '    API_QUOTA_PER_HOUR = 1000', type: 'added' },
     ]
   },
   ZERO_DAY: {
-    file: 'learning_model.py',
-    removedIds: ['l9'],
+    file: 'routes.py',
+    removedIds: [],
     added: [
-      { id: 'zd-1', text: '    # Reinforced anomaly scoring with neural regression', type: 'added' },
-      { id: 'zd-2', text: '    if score > 0.98:', type: 'added' },
-      { id: 'zd-3', text: '        ai.isolate_node("CORE_42")', type: 'added' },
-      { id: 'zd-4', text: '        return ai.HIGH_THREAT', type: 'added' },
-      { id: 'zd-5', text: '    return score > 0.85', type: 'added' },
+      { id: 'zd-1', text: 'from .roles import require_role', type: 'added' },
+      { id: 'zd-2', text: '', type: 'added' },
+      { id: 'zd-3', text: '@bp.route("/admin/emergency_shutdown", methods=["POST"])', type: 'added' },
+      { id: 'zd-4', text: '@require_role("admin")', type: 'added' },
+      { id: 'zd-5', text: 'def zero_day_lockdown():', type: 'added' },
+      { id: 'zd-6', text: '    current_app.config["MAINTENANCE_MODE"] = True', type: 'added' },
+      { id: 'zd-7', text: '    return jsonify({"status": "CORE_LOCKED"})', type: 'added' },
     ]
   },
   RANSOMWARE: {
-    file: 'integrity_monitor.py',
+    file: 'firewall.py',
     removedIds: [],
     added: [
-      { id: 'rw-1', text: '    if sys_calls.detect_mass_encryption():', type: 'added' },
-      { id: 'rw-2', text: '        sys_calls.lock_fs_write()', type: 'added' },
-      { id: 'rw-3', text: '        backup_manager.trigger_emergency_restore()', type: 'added' },
+      { id: 'rw-1', text: 'def validate_payload():', type: 'added' },
+      { id: 'rw-2', text: '    if request.content_length and request.content_length > 10_000:', type: 'added' },
+      { id: 'rw-3', text: '        abort(413, "Payload too large - Possible encryption flood")', type: 'added' },
     ]
   },
   DATA_EXFIL: {
-    file: 'traffic_filter.py',
+    file: 'auth.py',
     removedIds: [],
     added: [
-      { id: 'ex-1', text: '        if packet.outbound and packet.payload_entropy > 0.9:', type: 'added' },
-      { id: 'ex-2', text: '            gio.inspect_and_hold(packet)', type: 'added' },
+      { id: 'ex-1', text: 'def monitor_exfiltration():', type: 'added' },
+      { id: 'ex-2', text: '    # Monitor unusual token activity', type: 'added' },
+      { id: 'ex-3', text: '    if get_token_usage_count(get_current_user()) > 50:', type: 'added' },
+      { id: 'ex-4', text: '        revoke_token(request.headers.get("Authorization"))', type: 'added' },
+      { id: 'ex-5', text: '        abort(401, "Unusual data access patterns detected")', type: 'added' },
     ]
   }
 };
@@ -302,7 +309,6 @@ class GeneSysEngine {
 
     const currentFile = this.files[patchInfo.file];
     
-    // Create new lines array with diff annotations
     let newLines: CodeLine[] = [];
     currentFile.lines.forEach(line => {
       if (patchInfo.removedIds.includes(line.id)) {
@@ -312,10 +318,7 @@ class GeneSysEngine {
       }
     });
 
-    // Find the insertion point (ideally near the end or after removals)
     const insertIdx = Math.max(0, newLines.findIndex(l => l.type === 'removed') || newLines.length - 1);
-    
-    // Inject the new lines surgicaly
     newLines.splice(insertIdx + 1, 0, ...patchInfo.added);
 
     this.updateFile(patchInfo.file, { 
@@ -326,7 +329,7 @@ class GeneSysEngine {
 
     await new Promise(r => setTimeout(r, 1800));
 
-    // Stage 3: Learning (Commit Reinforced Antibodies)
+    // Stage 3: Learning
     this.emit({ 
       type: 'stage', 
       message: `HEALED: Reinforcing structural integrity. Immunity committed to genetic memory.`, 
@@ -335,7 +338,6 @@ class GeneSysEngine {
       targetFile: patchInfo.file
     });
     
-    // Finalize the code state (clean up diff indicators into "modified" or "stable" lines)
     const reinforcedLines = newLines
       .filter(l => l.type !== 'removed')
       .map(l => (l.type === 'added') ? { ...l, type: 'modified' as const } : l);
