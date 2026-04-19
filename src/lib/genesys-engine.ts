@@ -47,7 +47,9 @@ const INITIAL_FILES: Record<string, RepoFile> = {
       { id: 'c2', text: 'class Config:', type: 'keyword' },
       { id: 'c3', text: '    SECRET_KEY = os.getenv("SECRET_KEY", "dev_secret")', type: 'variable' },
       { id: 'c4', text: '    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "postgresql://postgres:password@db:5432/appdb")', type: 'variable' },
-      { id: 'c5', text: '    RATE_LIMIT = 100', type: 'variable' },
+      { id: 'c5', text: '    SQLALCHEMY_TRACK_MODIFICATIONS = False', type: 'variable' },
+      { id: 'c6', text: '    RATE_LIMIT = 100', type: 'variable' },
+      { id: 'c7', text: '    RATE_WINDOW = 60', type: 'variable' },
     ]
   },
   'firewall.py': {
@@ -57,10 +59,13 @@ const INITIAL_FILES: Record<string, RepoFile> = {
     status: 'original',
     integrity: 100,
     lines: [
-      { id: 'f1', text: 'from flask import request, abort', type: 'keyword' },
-      { id: 'f2', text: 'def rate_limit():', type: 'function' },
-      { id: 'f3', text: '    # Basic rate limiting logic', type: 'comment' },
-      { id: 'f4', text: '    pass', type: 'keyword' },
+      { id: 'f1', text: 'import time', type: 'keyword' },
+      { id: 'f2', text: 'from flask import request, abort, current_app', type: 'keyword' },
+      { id: 'f3', text: 'request_log = {}', type: 'variable' },
+      { id: 'f4', text: 'def rate_limit():', type: 'function' },
+      { id: 'f5', text: '    ip = request.remote_addr', type: 'variable' },
+      { id: 'f6', text: '    # Basic monitoring logic', type: 'comment' },
+      { id: 'f7', text: '    pass', type: 'keyword' },
     ]
   },
   'models.py': {
@@ -70,9 +75,11 @@ const INITIAL_FILES: Record<string, RepoFile> = {
     status: 'original',
     integrity: 100,
     lines: [
-      { id: 'm1', text: 'from .extensions import db', type: 'keyword' },
+      { id: 'm1', text: 'from .extensions import db, bcrypt', type: 'keyword' },
       { id: 'm2', text: 'class User(db.Model):', type: 'keyword' },
-      { id: 'm3', text: '    email = db.Column(db.String(120), unique=True)', type: 'variable' },
+      { id: 'm3', text: '    id = db.Column(db.Integer, primary_key=True)', type: 'variable' },
+      { id: 'm4', text: '    email = db.Column(db.String(120), unique=True)', type: 'variable' },
+      { id: 'm5', text: '    password_hash = db.Column(db.String(128))', type: 'variable' },
     ]
   }
 };
@@ -81,47 +88,57 @@ const MUTATION_PATCHES: Record<MutationType, any> = {
   SQL_INJECTION: [{
     file: 'models.py',
     removedIds: [],
-    added: [{ id: 'sq-1', text: '    @staticmethod', type: 'added' }, { id: 'sq-2', text: '    def safe_find(email): return User.query.filter_by(email=email).first()', type: 'added' }]
+    added: [
+      { text: '    @staticmethod', type: 'added' },
+      { text: '    def safe_find(email): return User.query.filter_by(email=email).first()', type: 'added' }
+    ]
   }],
   XSS: [{
     file: 'firewall.py',
     removedIds: [],
-    added: [{ id: 'x-1', text: 'def secure_headers(res): res.headers["X-XSS-Protection"] = "1; mode=block"', type: 'added' }]
+    added: [
+      { text: 'def secure_headers(res):', type: 'added' },
+      { text: '    res.headers["X-XSS-Protection"] = "1; mode=block"', type: 'added' },
+      { text: '    return res', type: 'added' }
+    ]
   }],
   CSRF: [{
     file: 'config.py',
     removedIds: [],
-    added: [{ id: 'cs-1', text: '    WTF_CSRF_ENABLED = True', type: 'added' }]
+    added: [{ text: '    WTF_CSRF_ENABLED = True', type: 'added' }]
   }],
   DDOS: [{
     file: 'firewall.py',
-    removedIds: ['f3'],
-    added: [{ id: 'dd-1', text: '    r = redis.from_url(current_app.config["REDIS_URL"])', type: 'added' }, { id: 'dd-2', text: '    if r.incr(get_ip()) > 100: abort(429)', type: 'added' }]
+    removedIds: ['f6', 'f7'],
+    added: [
+      { text: '    r = redis.Redis.from_url(current_app.config["REDIS_URL"])', type: 'added' },
+      { text: '    if r.incr(f"rate:{ip}") > 100: abort(429)', type: 'added' }
+    ]
   }],
   BOT_SWARM: [{
     file: 'firewall.py',
     removedIds: [],
-    added: [{ id: 'bt-1', text: '    if "headless" in request.headers.get("User-Agent", "").lower(): abort(403)', type: 'added' }]
+    added: [{ text: '    if "headless" in request.headers.get("User-Agent", "").lower(): abort(403)', type: 'added' }]
   }],
   API_ABUSE: [{
     file: 'config.py',
-    removedIds: ['c5'],
-    added: [{ id: 'api-1', text: '    RATE_LIMIT = 20 # Tightened for API Abuse', type: 'added' }]
+    removedIds: ['c6'],
+    added: [{ text: '    RATE_LIMIT = 20 # Tightened for API Abuse', type: 'added' }]
   }],
   ZERO_DAY: [{
     file: 'firewall.py',
     removedIds: [],
-    added: [{ id: 'zd-1', text: '    monitor_anomaly_patterns()', type: 'added' }]
+    added: [{ text: '    monitor_anomaly_patterns() # Zero-Day Defense', type: 'added' }]
   }],
   RANSOMWARE: [{
     file: 'firewall.py',
     removedIds: [],
-    added: [{ id: 'rw-1', text: '    if request.content_length > 10000: abort(413)', type: 'added' }]
+    added: [{ text: '    if request.content_length > 10000: abort(413)', type: 'added' }]
   }],
   DATA_EXFIL: [{
     file: 'firewall.py',
     removedIds: [],
-    added: [{ id: 'ex-1', text: '    check_outbound_data_threshold()', type: 'added' }]
+    added: [{ text: '    check_outbound_data_threshold()', type: 'added' }]
   }]
 };
 
@@ -178,37 +195,52 @@ class GeneSysEngine {
       isVaccineEffect: isVaccinated
     });
 
-    affectedFiles.forEach((file: string) => this.updateFile(file, { status: 'degraded', integrity: isVaccinated ? 80 : 40 }));
-    await new Promise(r => setTimeout(r, 1200 * delayMultiplier));
+    if (!isVaccinated) {
+      affectedFiles.forEach((file: string) => this.updateFile(file, { status: 'degraded', integrity: 40 }));
+      await new Promise(r => setTimeout(r, 1200 * delayMultiplier));
+    } else {
+      // Vaccination means we just reinforce immediately
+      affectedFiles.forEach((file: string) => this.updateFile(file, { status: 'reinforced', integrity: 95 }));
+      await new Promise(r => setTimeout(r, 400));
+    }
 
-    this.emit({ 
-      type: 'stage', 
-      message: `GENESIS_REPAIR: Injecting logic antibodies...`, 
-      mutationType: type,
-      stage: 'response',
-      affectedFiles
-    });
-
-    patches.forEach((patch: any) => {
-      const current = this.files[patch.file];
-      if (!current) return;
-      
-      const newLines = current.lines.map(l => patch.removedIds.includes(l.id) ? { ...l, type: 'removed' as const } : l);
-      newLines.push(...patch.added);
-      
-      this.updateFile(patch.file, { 
-        lines: newLines, 
-        status: 'patched', 
-        integrity: isVaccinated ? 95 : 70 
+    if (!isVaccinated) {
+      this.emit({ 
+        type: 'stage', 
+        message: `GENESIS_REPAIR: Injecting logic antibodies...`, 
+        mutationType: type,
+        stage: 'response',
+        affectedFiles
       });
-    });
 
-    await new Promise(r => setTimeout(r, 1800 * delayMultiplier));
+      patches.forEach((patch: any) => {
+        const current = this.files[patch.file];
+        if (!current) return;
+        
+        const newLines = current.lines.map(l => patch.removedIds.includes(l.id) ? { ...l, type: 'removed' as const } : l);
+        
+        // Dynamic ID generation to avoid React duplicate key errors
+        const addedLines = patch.added.map((line: any, i: number) => ({
+          ...line,
+          id: `added-${type}-${patch.file}-${Date.now()}-${i}`
+        }));
+
+        newLines.push(...addedLines);
+        
+        this.updateFile(patch.file, { 
+          lines: newLines, 
+          status: 'patched', 
+          integrity: 70 
+        });
+      });
+
+      await new Promise(r => setTimeout(r, 1800 * delayMultiplier));
+    }
 
     this.emit({ 
       type: 'success', 
       message: isVaccinated 
-        ? `REINFORCED: Immune response complete. Target integrity maxed.` 
+        ? `REINFORCED: Immune response complete. Target integrity restored via Antibody ${this.memory[type]}.` 
         : `HEALED: System stabilized. New antibody stored in genetic memory.`, 
       stage: 'learning',
       affectedFiles
@@ -219,7 +251,10 @@ class GeneSysEngine {
       this.updateFile(patch.file, { 
         status: 'reinforced', 
         integrity: 100,
-        lines: f.lines.filter(l => l.type !== 'removed').map(l => l.type === 'added' ? { ...l, type: 'modified' as const } : l)
+        lines: f.lines.filter(l => l.type !== 'removed').map(l => {
+          if (l.type === 'added') return { ...l, type: 'modified' as const };
+          return l;
+        })
       });
     });
 

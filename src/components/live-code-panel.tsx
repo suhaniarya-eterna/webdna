@@ -49,13 +49,13 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
   return (
     <div className="flex flex-col h-full bg-[#0F0B0A] overflow-hidden">
       {/* Panel Header */}
-      <div className="flex items-center justify-between p-3 border-b border-white/5 bg-white/[0.01] shrink-0">
+      <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/5 bg-white/[0.01] shrink-0">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="flex items-center gap-2 px-2 py-0.5 bg-white/5 rounded text-[10px] font-mono text-white/30 border border-white/5 shrink-0">
-            <GitBranch className="w-3 h-3 text-primary/40" />
+          <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded text-[10px] md:text-xs font-mono text-white/30 border border-white/5 shrink-0">
+            <GitBranch className="w-3 h-3 md:w-4 md:h-4 text-primary/40" />
             <span className="uppercase tracking-tighter">main</span>
           </div>
-          <div className="text-[10px] font-mono text-white/20 flex items-center gap-2 truncate">
+          <div className="text-[10px] md:text-xs font-mono text-white/20 flex items-center gap-2 truncate">
             <span className="hidden sm:inline">genesys_engine</span>
             <ChevronRight className="w-3 h-3 shrink-0" />
             <span className="text-white/40 truncate">{currentFile?.path}</span>
@@ -63,14 +63,14 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
         </div>
         <div className="flex items-center gap-3">
           <div className={cn(
-            "flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-bold tracking-[0.1em] uppercase transition-all duration-500",
+            "flex items-center gap-2 px-4 py-1.5 rounded-full border text-[9px] md:text-[10px] font-bold tracking-[0.1em] uppercase transition-all duration-500",
             currentStage === 'idle' ? "bg-green-500/5 border-green-500/10 text-green-500/60" : "bg-red-500/5 border-red-500/10 text-red-400 animate-pulse"
           )}>
             <span>{currentStage}</span>
           </div>
           {isFullScreen && onClose && (
-            <button onClick={onClose} className="p-1.5 hover:bg-white/5 rounded-full text-white/20 hover:text-white">
-              <X className="w-4 h-4" />
+            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-white/20 hover:text-white">
+              <X className="w-5 h-5" />
             </button>
           )}
         </div>
@@ -79,29 +79,29 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar */}
         <div className={cn(
-          "w-48 border-r border-white/5 bg-black/40 flex flex-col p-2 gap-1 overflow-y-auto shrink-0",
-          !isFullScreen && "hidden md:flex"
+          "w-48 md:w-56 border-r border-white/5 bg-black/40 flex flex-col p-3 gap-1 overflow-y-auto shrink-0 transition-all",
+          !isFullScreen && "hidden lg:flex"
         )}>
-          <div className="flex items-center gap-2 px-2 py-2 mb-2">
-            <Folder className="w-3 h-3 text-white/20" />
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Filesystem</span>
+          <div className="flex items-center gap-2 px-2 py-3 mb-2">
+            <Folder className="w-4 h-4 text-white/20" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">Filesystem</span>
           </div>
           {fileList.map((file) => (
             <button
               key={file.name}
               onClick={() => setActiveFile(file.name)}
               className={cn(
-                "w-full flex items-center justify-between px-2.5 py-1.5 rounded text-[10px] font-mono transition-all",
+                "w-full flex items-center justify-between px-3 py-2 rounded text-[11px] font-mono transition-all",
                 activeFile === file.name ? "bg-primary/10 text-primary" : "text-white/20 hover:bg-white/[0.02] hover:text-white/40"
               )}
             >
               <div className="flex items-center gap-2 truncate">
-                <FileCode className={cn("w-3 h-3 shrink-0", activeFile === file.name ? "text-primary/60" : "text-white/10")} />
+                <FileCode className={cn("w-4 h-4 shrink-0", activeFile === file.name ? "text-primary/60" : "text-white/10")} />
                 <span className="truncate">{file.name}</span>
               </div>
               {file.status !== 'original' && (
                 <div className={cn(
-                  "w-1 h-1 rounded-full shrink-0",
+                  "w-1.5 h-1.5 rounded-full shrink-0",
                   file.status === 'degraded' ? "bg-red-500 animate-pulse" : "bg-green-500/40"
                 )} />
               )}
@@ -113,7 +113,7 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
         <div className="flex-1 flex flex-col min-w-0 bg-[#0A0807] relative overflow-hidden">
           <div 
             ref={scrollRef}
-            className="flex-1 p-6 font-mono text-[11px] md:text-[13px] leading-relaxed overflow-auto scrollbar-thin scrollbar-thumb-white/5"
+            className="flex-1 p-6 font-mono text-[12px] md:text-[14px] leading-relaxed overflow-auto scrollbar-thin scrollbar-thumb-primary/40"
           >
             <AnimatePresence mode="popLayout">
               {currentFile?.lines.map((line, idx) => (
@@ -142,12 +142,12 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
       </div>
 
       {/* Footer */}
-      <div className="p-2 border-t border-white/5 bg-black/60 flex justify-between items-center px-6 shrink-0">
+      <div className="p-3 border-t border-white/5 bg-black/60 flex justify-between items-center px-6 shrink-0">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-3 h-3 text-white/20" />
-          <span className="text-[9px] uppercase tracking-[0.1em] text-white/20 font-bold">Auto-Remediation Active</span>
+          <ShieldCheck className="w-4 h-4 text-white/20" />
+          <span className="text-[10px] uppercase tracking-[0.1em] text-white/20 font-bold">Auto-Remediation Active</span>
         </div>
-        <div className="text-[9px] font-mono text-white/10 uppercase tracking-widest">
+        <div className="text-[10px] font-mono text-white/10 uppercase tracking-widest">
           {currentFile?.language} // NODE_42
         </div>
       </div>

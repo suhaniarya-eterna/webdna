@@ -41,8 +41,8 @@ export default function CoreDashboard() {
 
   return (
     <main className={cn(
-      "min-h-screen bg-[#0F0B0A] text-white p-4 md:p-6 lg:p-8 selection:bg-primary/30 relative transition-all duration-700",
-      "flex flex-col gap-6 lg:gap-8",
+      "min-h-screen bg-[#0F0B0A] text-white p-4 md:p-6 lg:p-10 selection:bg-primary/30 relative transition-all duration-700",
+      "flex flex-col gap-6 lg:gap-10",
       activeMutation === 'RANSOMWARE' && "grayscale-[0.5] contrast-[1.2] brightness-[0.8]",
       activeMutation === 'XSS' && "animate-flicker"
     )}>
@@ -55,29 +55,29 @@ export default function CoreDashboard() {
       )} />
       
       {/* Header HUD */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0 z-10">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="p-3 hover:bg-white/5 rounded-full transition-colors group">
-            <ArrowLeft className="w-6 h-6 text-white/40 group-hover:text-primary" />
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 shrink-0 z-10">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="p-4 hover:bg-white/5 rounded-full transition-colors group">
+            <ArrowLeft className="w-7 h-7 text-white/40 group-hover:text-primary" />
           </Link>
           <div>
-            <h1 className="text-2xl md:text-4xl font-bold cinematic-text text-primary">System Core</h1>
-            <p className="text-[10px] tracking-[0.4em] text-white/20 uppercase mt-1 font-bold">GENESYS_CONTROL_INTERFACE_v4.2</p>
+            <h1 className="text-3xl md:text-5xl font-bold cinematic-text text-primary">System Core</h1>
+            <p className="text-[11px] tracking-[0.4em] text-white/20 uppercase mt-2 font-bold">GENESYS_CONTROL_INTERFACE_v4.2</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-6">
           <Button 
             variant="outline" 
             onClick={() => setShowCodeOverlay(true)}
-            className="bg-white/5 border-white/5 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-primary hover:text-black h-12 px-8"
+            className="bg-white/5 border-white/10 text-[12px] font-bold tracking-[0.2em] uppercase hover:bg-primary hover:text-black h-14 px-10 transition-all"
           >
-            <Layers className="w-4 h-4 mr-3" />
+            <Layers className="w-5 h-5 mr-3" />
             Show All Logic
           </Button>
           <Badge variant="outline" className={cn(
-            "px-6 py-2.5 text-[11px] font-bold tracking-[0.3em] min-w-[200px] justify-center transition-all h-12",
-            isMutated ? "text-red-400 border-red-500/20 bg-red-500/5" : "text-green-400 border-green-500/20 bg-green-500/5"
+            "px-8 py-3 text-[12px] font-bold tracking-[0.3em] min-w-[240px] justify-center transition-all h-14",
+            isMutated ? "text-red-400 border-red-500/30 bg-red-500/5" : "text-green-400 border-green-500/30 bg-green-500/5"
           )}>
             {isMutated ? "MUTATION_DETECTED" : "SYSTEM_HEALTHY"}
           </Badge>
@@ -85,22 +85,22 @@ export default function CoreDashboard() {
       </header>
 
       {/* Main Dashboard Grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 min-h-0 overflow-hidden lg:overflow-visible">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 min-h-0">
         
         {/* Left Column: Logs & Node Info */}
-        <div className="lg:col-span-3 flex flex-col gap-6 lg:gap-8 min-h-[400px] lg:min-h-0">
+        <div className="lg:col-span-3 flex flex-col gap-8 lg:gap-10 min-h-[400px] lg:min-h-0">
           <section className="flex-1 glass-panel overflow-hidden flex flex-col bg-white/[0.01] border-white/5">
             <LogStream />
           </section>
           
-          <section className="glass-panel p-6 space-y-6 bg-white/[0.01] border-white/5 shrink-0">
-            <div className="flex items-center gap-3">
-              <Database className="w-4 h-4 text-primary" />
-              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/40">Node Integrity</span>
+          <section className="glass-panel p-8 space-y-8 bg-white/[0.01] border-white/5 shrink-0">
+            <div className="flex items-center gap-4">
+              <Database className="w-5 h-5 text-primary" />
+              <span className="text-[12px] font-bold tracking-[0.2em] uppercase text-white/40">Node Integrity</span>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {['API Layer', 'Security Mesh', 'Bio-Link'].map((node) => (
-                <div key={node} className="flex justify-between items-center text-[11px] uppercase">
+                <div key={node} className="flex justify-between items-center text-[12px] uppercase">
                   <span className="text-white/20">{node}</span>
                   <span className={cn("font-mono font-bold", isMutated ? "text-red-400" : "text-green-400")}>
                     {isMutated ? "DEGRADED" : "OPTIMAL"}
@@ -112,17 +112,17 @@ export default function CoreDashboard() {
         </div>
 
         {/* Center Column: Live Code Engine */}
-        <div className="lg:col-span-6 flex flex-col min-h-[500px] lg:min-h-0">
-          <section className="flex-1 relative bg-black/40 rounded-[1.5rem] border border-primary/10 overflow-hidden shadow-2xl flex flex-col">
+        <div className="lg:col-span-6 flex flex-col min-h-[600px] lg:min-h-0">
+          <section className="flex-1 relative bg-black/40 rounded-[2rem] border border-primary/20 overflow-hidden shadow-2xl flex flex-col">
             <LiveCodePanel />
             {isMutated && (
-              <div className="absolute inset-0 pointer-events-none border-2 border-red-500/20 animate-pulse z-10 rounded-[1.5rem]" />
+              <div className="absolute inset-0 pointer-events-none border-2 border-red-500/30 animate-pulse z-10 rounded-[2rem]" />
             )}
           </section>
         </div>
 
         {/* Right Column: Controls & Memory */}
-        <div className="lg:col-span-3 flex flex-col gap-6 lg:gap-8 min-h-[400px] lg:min-h-0">
+        <div className="lg:col-span-3 flex flex-col gap-8 lg:gap-10 min-h-[400px] lg:min-h-0">
           <section className="flex-[3] min-h-0 overflow-hidden">
             <MutationControls />
           </section>
@@ -141,13 +141,13 @@ export default function CoreDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl p-4 md:p-8 flex items-center justify-center"
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl p-6 md:p-12 flex items-center justify-center"
           >
             <motion.div 
               initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.98, opacity: 0 }}
-              className="w-full h-full max-w-[1800px]"
+              className="w-full h-full max-w-[2000px]"
             >
               <LiveCodePanel isFullScreen onClose={() => setShowCodeOverlay(false)} />
             </motion.div>
