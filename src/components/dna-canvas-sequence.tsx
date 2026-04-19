@@ -13,6 +13,7 @@ export function DNACanvasSequence({ progress }: DNACanvasSequenceProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [totalFrames, setTotalFrames] = useState(0);
   const lastIndexRef = useRef<number>(-1);
+  const loadedImagesRef = useRef<HTMLImageElement[]>([]);
 
   useEffect(() => {
     const fetchAndPreload = async () => {
@@ -27,31 +28,43 @@ export function DNACanvasSequence({ progress }: DNACanvasSequenceProps) {
         }
 
         setTotalFrames(framePaths.length);
+        let loadedCount = 0;
 
-        const loadedImages: HTMLImageElement[] = [];
-        let count = 0;
-
+        // Optimization: Start preloading all images in parallel
         framePaths.forEach((path, index) => {
           const img = new Image();
           img.src = path;
           
           img.onload = () => {
-            count++;
-            loadedImages[index] = img;
-            if (count === framePaths.length) {
-              setImages(loadedImages.filter(i => i !== undefined));
+            loadedCount++;
+            loadedImagesRef.current[index] = img;
+            
+            // Critical: Unlock the UI as soon as the first frame is ready
+            if (index === 0 && !isLoaded) {
+              setImages([...loadedImagesRef.current]);
               setIsLoaded(true);
             }
+
+            // Batch update the internal state every 10 frames to keep the UI snappy
+            // without overwhelming the React render cycle
+            if (loadedCount % 10 === 0 || loadedCount === framePaths.length) {
+              setImages([...loadedImagesRef.current]);
+            }
           };
+
           img.onerror = () => {
-            count++;
-            if (count === framePaths.length) {
-              setImages(loadedImages.filter(i => i !== undefined));
+            loadedCount++;
+            // If the first frame fails, still try to unlock with whatever we have
+            if (index === 0 && !isLoaded) {
               setIsLoaded(true);
+            }
+            if (loadedCount === framePaths.length) {
+              setImages([...loadedImagesRef.current]);
             }
           };
         });
       } catch (error) {
+        console.error("Failed to load genetic sequence frames:", error);
         setIsLoaded(true);
       }
     };
@@ -73,10 +86,21 @@ export function DNACanvasSequence({ progress }: DNACanvasSequenceProps) {
     const context = canvas.getContext('2d', { alpha: false });
     if (!context) return;
 
-    // Use modulo or clamp to ensure we stay within the actual loaded images array
-    const actualIndex = Math.min(index, images.length - 1);
-    const image = images[actualIndex];
-    if (!image || !image.complete || image.naturalWidth === 0) return;
+    // Use current frame or fallback to the nearest loaded frame to prevent flickering
+    let actualIndex = Math.floor(index);
+    let image = images[actualIndex];
+
+    // If the specific frame isn't loaded yet, find the closest previous loaded frame
+    if (!image || !image.complete || image.naturalWidth === 0) {
+      for (let i = actualIndex; i >= 0; i--) {
+        if (images[i] && images[i].complete && images[i].naturalWidth > 0) {
+          image = images[i];
+          break;
+        }
+      }
+    }
+
+    if (!image) return;
 
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
@@ -102,7 +126,7 @@ export function DNACanvasSequence({ progress }: DNACanvasSequenceProps) {
     context.fillStyle = '#0F0B0A';
     context.fillRect(0, 0, canvasWidth, canvasHeight);
     context.drawImage(image, x, y, drawWidth, drawHeight);
-    lastIndexRef.current = index;
+    lastIndexRef.current = actualIndex;
   };
 
   useMotionValueEvent(frameIndex, "change", (latest) => {
@@ -119,8 +143,7 @@ export function DNACanvasSequence({ progress }: DNACanvasSequenceProps) {
         canvasRef.current.height = window.innerHeight * window.devicePixelRatio;
         
         if (isLoaded && images.length > 0) {
-          const currentIndex = Math.floor(frameIndex.get());
-          drawFrame(currentIndex);
+          drawFrame(frameIndex.get());
         }
       }
     };
