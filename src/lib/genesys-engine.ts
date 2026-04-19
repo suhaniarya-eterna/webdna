@@ -10,7 +10,7 @@ export interface CodeLine {
 export interface RepoFile {
   name: string;
   path: string;
-  language: 'python' | 'javascript';
+  language: 'python' | 'javascript' | 'dockerfile' | 'yaml' | 'nginx';
   status: FileStatus;
   lines: CodeLine[];
   lastCommit?: string;
@@ -46,11 +46,12 @@ const INITIAL_FILES: Record<string, RepoFile> = {
       { id: 'c2', text: '', type: 'variable' },
       { id: 'c3', text: 'class Config:', type: 'keyword' },
       { id: 'c4', text: '    SECRET_KEY = os.getenv("SECRET_KEY", "dev_secret")', type: 'variable' },
-      { id: 'c5', text: '    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///site.db")', type: 'variable' },
+      { id: 'c5', text: '    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "postgresql://postgres:password@db:5432/appdb")', type: 'variable' },
       { id: 'c6', text: '    SQLALCHEMY_TRACK_MODIFICATIONS = False', type: 'variable' },
-      { id: 'c7', text: '', type: 'variable' },
-      { id: 'c8', text: '    RATE_LIMIT = 100', type: 'variable' },
-      { id: 'c9', text: '    RATE_WINDOW = 60', type: 'variable' },
+      { id: 'c7', text: '    REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")', type: 'variable' },
+      { id: 'c8', text: '', type: 'variable' },
+      { id: 'c9', text: '    RATE_LIMIT = 100', type: 'variable' },
+      { id: 'c10', text: '    RATE_WINDOW = 60', type: 'variable' },
     ]
   },
   'firewall.py': {
@@ -79,6 +80,11 @@ const INITIAL_FILES: Record<string, RepoFile> = {
       { id: 'f16', text: '    if ip not in request_log:', type: 'keyword' },
       { id: 'f17', text: '        request_log[ip] = []', type: 'variable' },
       { id: 'f18', text: '    return True', type: 'keyword' },
+      { id: 'f19', text: '', type: 'variable' },
+      { id: 'f20', text: 'def secure_headers(response):', type: 'function' },
+      { id: 'f21', text: '    response.headers["X-Content-Type-Options"] = "nosniff"', type: 'variable' },
+      { id: 'f22', text: '    response.headers["X-Frame-Options"] = "DENY"', type: 'variable' },
+      { id: 'f23', text: '    return response', type: 'keyword' },
     ]
   },
   'models.py': {
@@ -95,9 +101,10 @@ const INITIAL_FILES: Record<string, RepoFile> = {
       { id: 'm4', text: '    id = db.Column(db.Integer, primary_key=True)', type: 'variable' },
       { id: 'm5', text: '    email = db.Column(db.String(120), unique=True, nullable=False)', type: 'variable' },
       { id: 'm6', text: '    password_hash = db.Column(db.String(128), nullable=False)', type: 'variable' },
-      { id: 'm7', text: '', type: 'variable' },
-      { id: 'm8', text: '    def set_password(self, password):', type: 'function' },
-      { id: 'm9', text: '        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")', type: 'variable' },
+      { id: 'm7', text: '    role = db.Column(db.String(20), default="user")', type: 'variable' },
+      { id: 'm8', text: '', type: 'variable' },
+      { id: 'm9', text: '    def set_password(self, password):', type: 'function' },
+      { id: 'm10', text: '        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")', type: 'variable' },
     ]
   },
   'auth.py': {
@@ -113,11 +120,8 @@ const INITIAL_FILES: Record<string, RepoFile> = {
       { id: 'a3', text: 'from flask import current_app, request', type: 'keyword' },
       { id: 'a4', text: '', type: 'variable' },
       { id: 'a5', text: 'def generate_token(user_id):', type: 'function' },
-      { id: 'a6', text: '    payload = {', type: 'variable' },
-      { id: 'a7', text: '        "user_id": user_id,', type: 'variable' },
-      { id: 'a8', text: '        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)', type: 'variable' },
-      { id: 'a9', text: '    }', type: 'variable' },
-      { id: 'a10', text: '    return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")', type: 'variable' },
+      { id: 'a6', text: '    payload = { "user_id": user_id, "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2) }', type: 'variable' },
+      { id: 'a7', text: '    return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")', type: 'variable' },
     ]
   },
   'routes.py': {
@@ -131,16 +135,95 @@ const INITIAL_FILES: Record<string, RepoFile> = {
       { id: 'r1', text: 'from flask import Blueprint, request, jsonify', type: 'keyword' },
       { id: 'r2', text: 'from .models import User', type: 'keyword' },
       { id: 'r3', text: 'from .extensions import db', type: 'keyword' },
-      { id: 'r4', text: '', type: 'variable' },
-      { id: 'r5', text: 'bp = Blueprint("routes", __name__)', type: 'variable' },
-      { id: 'r6', text: '', type: 'variable' },
-      { id: 'r7', text: '@bp.route("/register", methods=["POST"])', type: 'function' },
-      { id: 'r8', text: 'def register():', type: 'function' },
-      { id: 'r9', text: '    data = request.json', type: 'variable' },
-      { id: 'r10', text: '    user = User(email=data.get("email"))', type: 'variable' },
-      { id: 'r11', text: '    user.set_password(data.get("password"))', type: 'variable' },
-      { id: 'r12', text: '    db.session.add(user)', type: 'variable' },
-      { id: 'r13', text: '    db.session.commit()', type: 'variable' },
+      { id: 'r4', text: 'from .auth import generate_token, get_current_user', type: 'keyword' },
+      { id: 'r5', text: '', type: 'variable' },
+      { id: 'r6', text: 'bp = Blueprint("routes", __name__)', type: 'variable' },
+      { id: 'r7', text: '', type: 'variable' },
+      { id: 'r8', text: '@bp.route("/register", methods=["POST"])', type: 'function' },
+      { id: 'r9', text: 'def register():', type: 'function' },
+      { id: 'r10', text: '    data = request.json', type: 'variable' },
+      { id: 'r11', text: '    user = User(email=data.get("email"))', type: 'variable' },
+      { id: 'r12', text: '    user.set_password(data.get("password"))', type: 'variable' },
+      { id: 'r13', text: '    db.session.add(user)', type: 'variable' },
+      { id: 'r14', text: '    db.session.commit()', type: 'variable' },
+    ]
+  },
+  '__init__.py': {
+    name: '__init__.py',
+    path: '/app/__init__.py',
+    language: 'python',
+    status: 'original',
+    lastCommit: 'factory_pattern',
+    updatedAt: '6h ago',
+    lines: [
+      { id: 'i1', text: 'from flask import Flask', type: 'keyword' },
+      { id: 'i2', text: 'from .config import Config', type: 'keyword' },
+      { id: 'i3', text: 'from .extensions import db, bcrypt', type: 'keyword' },
+      { id: 'i4', text: 'from .routes import bp', type: 'keyword' },
+      { id: 'i5', text: '', type: 'variable' },
+      { id: 'i6', text: 'def create_app():', type: 'function' },
+      { id: 'i7', text: '    app = Flask(__name__)', type: 'variable' },
+      { id: 'i8', text: '    app.config.from_object(Config)', type: 'variable' },
+      { id: 'i9', text: '    db.init_app(app)', type: 'variable' },
+      { id: 'i10', text: '    bcrypt.init_app(app)', type: 'variable' },
+      { id: 'i11', text: '    app.register_blueprint(bp)', type: 'variable' },
+      { id: 'i12', text: '    return app', type: 'keyword' },
+    ]
+  },
+  'run.py': {
+    name: 'run.py',
+    path: '/run.py',
+    language: 'python',
+    status: 'original',
+    lastCommit: 'entry_point',
+    updatedAt: '1h ago',
+    lines: [
+      { id: 'run1', text: 'from app import create_app', type: 'keyword' },
+      { id: 'run2', text: 'from app.extensions import db', type: 'keyword' },
+      { id: 'run3', text: '', type: 'variable' },
+      { id: 'run4', text: 'app = create_app()', type: 'variable' },
+      { id: 'run5', text: '', type: 'variable' },
+      { id: 'run6', text: 'if __name__ == "__main__":', type: 'keyword' },
+      { id: 'run7', text: '    app.run(host="0.0.0.0", port=5000)', type: 'variable' },
+    ]
+  },
+  'docker-compose.yml': {
+    name: 'docker-compose.yml',
+    path: '/docker-compose.yml',
+    language: 'yaml',
+    status: 'original',
+    lastCommit: 'container_orchestration',
+    updatedAt: '2h ago',
+    lines: [
+      { id: 'd1', text: 'version: "3.9"', type: 'keyword' },
+      { id: 'd2', text: 'services:', type: 'keyword' },
+      { id: 'd3', text: '  web:', type: 'variable' },
+      { id: 'd4', text: '    build: .', type: 'variable' },
+      { id: 'd5', text: '    ports:', type: 'variable' },
+      { id: 'd6', text: '      - "5000:5000"', type: 'variable' },
+      { id: 'd7', text: '  db:', type: 'variable' },
+      { id: 'd8', text: '    image: postgres:15', type: 'variable' },
+      { id: 'd9', text: '  redis:', type: 'variable' },
+      { id: 'd10', text: '    image: redis:7', type: 'variable' },
+    ]
+  },
+  'nginx.conf': {
+    name: 'nginx.conf',
+    path: '/nginx.conf',
+    language: 'nginx',
+    status: 'original',
+    lastCommit: 'reverse_proxy',
+    updatedAt: '3h ago',
+    lines: [
+      { id: 'n1', text: 'events {}', type: 'keyword' },
+      { id: 'n2', text: 'http {', type: 'keyword' },
+      { id: 'n3', text: '    server {', type: 'keyword' },
+      { id: 'n4', text: '        listen 80;', type: 'variable' },
+      { id: 'n5', text: '        location / {', type: 'variable' },
+      { id: 'n6', text: '            proxy_pass http://web:5000;', type: 'variable' },
+      { id: 'n7', text: '        }', type: 'variable' },
+      { id: 'n8', text: '    }', type: 'variable' },
+      { id: 'n9', text: '}', type: 'keyword' },
     ]
   }
 };
@@ -165,7 +248,7 @@ const MUTATION_PATCHES: Record<MutationType, FilePatch[]> = {
     },
     {
       file: 'routes.py',
-      removedIds: ['r10'],
+      removedIds: ['r11'],
       added: [
         { id: 'sqli-5', text: '    # Switched to hardened search method', type: 'added' },
         { id: 'sqli-6', text: '    user = User.safe_find_by_email(data.get("email"))', type: 'added' },
@@ -256,7 +339,7 @@ const MUTATION_PATCHES: Record<MutationType, FilePatch[]> = {
   API_ABUSE: [
     {
       file: 'config.py',
-      removedIds: ['c8'],
+      removedIds: ['c9'],
       added: [
         { id: 'api-1', text: '    # Tightened Rate Limit for API Abuse Prevention', type: 'added' },
         { id: 'api-2', text: '    RATE_LIMIT = 20', type: 'added' },

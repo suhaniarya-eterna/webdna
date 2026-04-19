@@ -67,7 +67,20 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
   };
 
   const currentFile = files[activeFile];
-  const folders = Array.from(new Set(Object.values(files).map(f => f.path.split('/')[1])));
+  
+  // Categorize files into folders based on their path
+  const categorizedFiles: Record<string, RepoFile[]> = {};
+  Object.values(files).forEach(file => {
+    const folder = file.path.split('/')[1] || 'root';
+    if (!categorizedFiles[folder]) categorizedFiles[folder] = [];
+    categorizedFiles[folder].push(file);
+  });
+
+  const folders = Object.keys(categorizedFiles).sort((a, b) => {
+    if (a === 'root') return -1;
+    if (b === 'root') return 1;
+    return a.localeCompare(b);
+  });
 
   return (
     <div className={cn(
@@ -82,7 +95,7 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
             <span className="hidden xs:inline uppercase tracking-tighter">main</span>
           </div>
           <div className="text-[10px] font-mono text-white/20 flex items-center gap-2 truncate">
-            <span className="hidden sm:inline">genesys_engine</span>
+            <span className="hidden sm:inline">genesis_engine</span>
             <ChevronRight className="w-3 h-3 shrink-0" />
             <span className="text-white/40 truncate">{currentFile?.path}</span>
           </div>
@@ -107,8 +120,11 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* File Tree Sidebar */}
-        <div className="hidden lg:flex w-56 border-r border-white/5 bg-black/40 flex-col p-3 gap-1 overflow-y-auto shrink-0 scrollbar-hide">
+        {/* File Tree Sidebar - Always visible in full screen */}
+        <div className={cn(
+          "w-56 border-r border-white/5 bg-black/40 flex-col p-3 gap-1 overflow-y-auto shrink-0 scrollbar-hide",
+          !isFullScreen && "hidden lg:flex"
+        )}>
           <div className="flex items-center gap-2 px-2 py-2 mb-2 border-b border-white/5">
             <Folder className="w-3 h-3 text-primary/40" />
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">Filesystem</span>
@@ -118,9 +134,9 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
             <div key={folder} className="space-y-0.5 mb-4">
               <div className="flex items-center gap-2 px-2 text-[8px] font-bold text-white/10 uppercase tracking-tighter mb-1">
                 <ChevronRight className="w-2.5 h-2.5" />
-                <span>{folder}</span>
+                <span>{folder === 'root' ? '/' : `/${folder}`}</span>
               </div>
-              {Object.values(files).filter(f => f.path.startsWith(`/${folder}`)).map((file) => (
+              {categorizedFiles[folder].map((file) => (
                 <button
                   key={file.name}
                   onClick={() => setActiveFile(file.name)}
@@ -153,7 +169,7 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
         <div className="flex-1 flex flex-col min-w-0 bg-[#0A0807] relative">
           <div 
             ref={scrollRef}
-            className="flex-1 p-4 md:p-8 font-mono text-[11px] md:text-[12px] leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-white/5"
+            className="flex-1 p-4 md:p-8 lg:p-12 font-mono text-[11px] md:text-[13px] lg:text-[14px] leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-white/5"
           >
             <AnimatePresence mode="popLayout" initial={false}>
               {currentFile?.lines.map((line, idx) => (
@@ -165,13 +181,13 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.3 }}
                   className={cn(
-                    "flex gap-4 group hover:bg-white/[0.01] py-0.5 border-l-2 transition-colors",
+                    "flex gap-6 group hover:bg-white/[0.01] py-0.5 border-l-2 transition-colors",
                     line.type === 'added' ? "border-emerald-500/40 bg-emerald-500/[0.03]" :
                     line.type === 'removed' ? "border-rose-500/40 bg-rose-500/[0.03]" :
                     line.type === 'modified' ? "border-yellow-500/40 bg-yellow-500/[0.02]" : "border-transparent"
                   )}
                 >
-                  <span className="w-8 text-right text-white/5 select-none text-[10px] shrink-0 font-light">{idx + 1}</span>
+                  <span className="w-10 text-right text-white/5 select-none text-[10px] shrink-0 font-light">{idx + 1}</span>
                   <span className={cn(getColorClass(line.type), "relative whitespace-pre font-medium")}>
                     {line.type === 'added' && <span className="mr-2 text-emerald-500/30 font-bold">+</span>}
                     {line.type === 'removed' && <span className="mr-2 text-rose-500/30 font-bold">-</span>}
@@ -199,14 +215,14 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
         <div className="flex gap-6 overflow-hidden">
           <div className="flex items-center gap-2 shrink-0">
             <Search className={cn("w-3 h-3 transition-colors", currentStage === 'detection' ? "text-primary animate-pulse" : "text-white/10")} />
-            <span className="text-[8px] uppercase tracking-[0.2em] text-white/20 font-bold">Heuristic Engine</span>
+            <span className="text-[8px] lg:text-[10px] uppercase tracking-[0.2em] text-white/20 font-bold">Heuristic Engine</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <ShieldCheck className={cn("w-3 h-3 transition-colors", currentStage === 'learning' ? "text-green-500/60" : "text-white/10")} />
-            <span className="text-[8px] uppercase tracking-[0.2em] text-white/20 font-bold">Auto-Remediation</span>
+            <span className="text-[8px] lg:text-[10px] uppercase tracking-[0.2em] text-white/20 font-bold">Auto-Remediation</span>
           </div>
         </div>
-        <div className="text-[8px] font-mono text-white/10 tracking-widest shrink-0 truncate ml-4 uppercase">
+        <div className="text-[8px] lg:text-[10px] font-mono text-white/10 tracking-widest shrink-0 truncate ml-4 uppercase">
           GENESYS_NODE_42 // {currentFile?.language}
         </div>
       </div>
