@@ -44,7 +44,7 @@ export default function CoreDashboard() {
   return (
     <main className={cn(
       "min-h-screen bg-[#0F0B0A] text-white p-4 md:p-6 lg:p-8 selection:bg-primary/30 relative transition-all duration-700",
-      "lg:overflow-hidden overflow-y-auto",
+      "lg:h-screen lg:overflow-hidden overflow-y-auto flex flex-col",
       activeMutation === 'RANSOMWARE' && "grayscale-[0.5] contrast-[1.2] brightness-[0.8]",
       activeMutation === 'XSS' && "animate-flicker"
     )}>
@@ -70,10 +70,10 @@ export default function CoreDashboard() {
         </div>
       )}
 
-      <div className="max-w-[1600px] mx-auto flex flex-col lg:h-[calc(100vh-64px)] h-auto gap-6 relative z-10">
+      <div className="max-w-[1800px] mx-auto w-full flex flex-col lg:h-full gap-6 relative z-10 flex-1">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/10 pb-6 gap-4 shrink-0">
-          <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-white/10 pb-6 gap-6 shrink-0">
+          <div className="flex items-center gap-4 md:gap-6">
             <Link href="/" className="p-2 hover:bg-white/5 rounded-full transition-colors group">
               <ArrowLeft className="w-5 h-5 text-white/40 group-hover:text-primary transition-colors" />
             </Link>
@@ -82,18 +82,19 @@ export default function CoreDashboard() {
               <p className="text-[9px] tracking-[0.4em] text-white/30 uppercase mt-1">GENESYS_CONTROL_INTERFACE</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => setShowCodeOverlay(true)}
-              className="bg-white/5 border-white/10 text-[10px] font-bold tracking-[0.3em] uppercase hover:bg-primary hover:text-black transition-all"
+              className="bg-white/5 border-white/10 text-[10px] font-bold tracking-[0.3em] uppercase hover:bg-primary hover:text-black transition-all h-9"
             >
               <Layers className="w-3 h-3 mr-2" />
-              Show All Logic
+              <span className="hidden xs:inline">Show All Logic</span>
+              <span className="xs:hidden">All Logic</span>
             </Button>
             <Badge variant="outline" className={cn(
-              "px-4 py-1 text-[10px] font-bold tracking-widest min-w-[140px] justify-center",
+              "px-4 py-1.5 text-[10px] font-bold tracking-widest min-w-[140px] justify-center transition-colors duration-500 h-9",
               isMutated ? "text-red-400 border-red-400/20 bg-red-400/5" : "text-green-400 border-green-400/20 bg-green-400/5"
             )}>
               {isMutated ? "MUTATION_DETECTED" : "SYSTEM_HEALTHY"}
@@ -105,8 +106,8 @@ export default function CoreDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
           
           {/* Left Panel: Logs & Health */}
-          <div className="lg:col-span-3 flex flex-col gap-6 min-h-0">
-            <div className="glass-panel flex-1 min-h-[400px] overflow-hidden flex flex-col border-white/5 bg-white/[0.01]">
+          <div className="lg:col-span-3 flex flex-col gap-6 lg:min-h-0 min-h-[500px]">
+            <div className="glass-panel flex-1 min-h-0 overflow-hidden flex flex-col border-white/5 bg-white/[0.01]">
               <LogStream />
             </div>
             
@@ -129,7 +130,7 @@ export default function CoreDashboard() {
           </div>
 
           {/* Center Panel: Repository Interface */}
-          <div className="lg:col-span-6 flex flex-col min-h-[600px] lg:min-h-0">
+          <div className="lg:col-span-6 flex flex-col lg:min-h-0 min-h-[600px]">
             <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col bg-black/40 rounded-xl border border-primary/10">
               <LiveCodePanel />
               {isMutated && (
@@ -139,12 +140,12 @@ export default function CoreDashboard() {
           </div>
 
           {/* Right Panel: Controls & Memory */}
-          <div className="lg:col-span-3 flex flex-col gap-6 min-h-0">
-            <div className="flex-[1.5] min-h-[400px] lg:min-h-0 flex flex-col">
+          <div className="lg:col-span-3 flex flex-col gap-6 lg:min-h-0 min-h-[500px]">
+            <div className="flex-[1.5] min-h-0 flex flex-col">
               <MutationControls />
             </div>
 
-            <div className="flex-1 min-h-[300px] lg:min-h-0 flex flex-col">
+            <div className="flex-1 min-h-0 flex flex-col">
               <MemoryPanel />
             </div>
 
@@ -157,7 +158,7 @@ export default function CoreDashboard() {
                 {Object.values(files).slice(0, 3).map(file => (
                   <div key={file.name} className="flex flex-col items-center gap-1.5">
                     <div className={cn(
-                      "w-full h-1 rounded-full",
+                      "w-full h-1 rounded-full transition-colors duration-500",
                       file.status === 'reinforced' ? "bg-green-500" :
                       file.status === 'degraded' ? "bg-red-500" :
                       file.status === 'patched' ? "bg-blue-400" : "bg-white/10"
@@ -179,13 +180,13 @@ export default function CoreDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md p-4 md:p-8 flex items-center justify-center"
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md p-4 md:p-8 lg:p-12 flex items-center justify-center"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full h-full max-w-[1400px] relative"
+              className="w-full h-full max-w-[1600px] relative"
             >
               <LiveCodePanel isFullScreen onClose={() => setShowCodeOverlay(false)} />
             </motion.div>
