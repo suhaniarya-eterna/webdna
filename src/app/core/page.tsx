@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { Shield, ArrowLeft, Database, Layers, CheckCircle, AlertTriangle, Activity } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import Link from 'link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CoreDashboard() {
@@ -43,7 +43,7 @@ export default function CoreDashboard() {
 
   return (
     <main className={cn(
-      "min-h-screen bg-[#0F0B0A] text-white p-4 md:p-6 lg:p-8 selection:bg-primary/30 relative transition-all duration-700",
+      "min-h-screen bg-[#0F0B0A] text-white p-6 md:p-8 lg:p-12 selection:bg-primary/30 relative transition-all duration-700",
       "lg:h-screen lg:overflow-hidden overflow-y-auto flex flex-col",
       activeMutation === 'RANSOMWARE' && "grayscale-[0.5] contrast-[1.2] brightness-[0.8]",
       activeMutation === 'XSS' && "animate-flicker"
@@ -58,7 +58,7 @@ export default function CoreDashboard() {
       
       {activeMutation === 'DATA_EXFIL' && (
         <div className="fixed inset-0 z-[60] pointer-events-none overflow-hidden opacity-30">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(30)].map((_, i) => (
             <motion.div
               key={i}
               initial={{ x: '50vw', y: '50vh', opacity: 0 }}
@@ -70,31 +70,31 @@ export default function CoreDashboard() {
         </div>
       )}
 
-      <div className="max-w-[1800px] mx-auto w-full flex flex-col lg:h-full gap-6 relative z-10 flex-1">
+      <div className="max-w-[1920px] mx-auto w-full flex flex-col lg:h-full gap-8 relative z-10 flex-1">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-white/10 pb-6 gap-6 shrink-0">
-          <div className="flex items-center gap-4 md:gap-6">
-            <Link href="/" className="p-2 hover:bg-white/5 rounded-full transition-colors group">
-              <ArrowLeft className="w-5 h-5 text-white/40 group-hover:text-primary transition-colors" />
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-white/10 pb-8 gap-8 shrink-0">
+          <div className="flex items-center gap-6 md:gap-8">
+            <Link href="/" className="p-3 hover:bg-white/5 rounded-full transition-colors group">
+              <ArrowLeft className="w-6 h-6 text-white/40 group-hover:text-primary transition-colors" />
             </Link>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold cinematic-text text-primary">System Core</h1>
-              <p className="text-[9px] tracking-[0.4em] text-white/30 uppercase mt-1">GENESYS_CONTROL_INTERFACE</p>
+              <h1 className="text-2xl md:text-4xl font-bold cinematic-text text-primary">System Core</h1>
+              <p className="text-[10px] tracking-[0.5em] text-white/30 uppercase mt-2 font-bold">GENESYS_CONTROL_INTERFACE_v4.2</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-6">
             <Button 
               variant="outline" 
-              size="sm" 
+              size="lg" 
               onClick={() => setShowCodeOverlay(true)}
-              className="bg-white/5 border-white/10 text-[10px] font-bold tracking-[0.3em] uppercase hover:bg-primary hover:text-black transition-all h-9"
+              className="bg-white/5 border-white/10 text-[11px] font-bold tracking-[0.4em] uppercase hover:bg-primary hover:text-black transition-all h-12 px-8 shadow-lg"
             >
-              <Layers className="w-3 h-3 mr-2" />
+              <Layers className="w-4 h-4 mr-3" />
               <span className="hidden xs:inline">Show All Logic</span>
               <span className="xs:hidden">All Logic</span>
             </Button>
             <Badge variant="outline" className={cn(
-              "px-4 py-1.5 text-[10px] font-bold tracking-widest min-w-[140px] justify-center transition-colors duration-500 h-9",
+              "px-6 py-2.5 text-[11px] font-bold tracking-[0.3em] min-w-[200px] justify-center transition-colors duration-500 h-12 shadow-inner",
               isMutated ? "text-red-400 border-red-400/20 bg-red-400/5" : "text-green-400 border-green-400/20 bg-green-400/5"
             )}>
               {isMutated ? "MUTATION_DETECTED" : "SYSTEM_HEALTHY"}
@@ -103,23 +103,23 @@ export default function CoreDashboard() {
         </div>
 
         {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1 min-h-0">
           
           {/* Left Panel: Logs & Health */}
-          <div className="lg:col-span-3 flex flex-col gap-6 lg:min-h-0 min-h-[500px]">
-            <div className="glass-panel flex-1 min-h-0 overflow-hidden flex flex-col border-white/5 bg-white/[0.01]">
+          <div className="lg:col-span-3 flex flex-col gap-8 lg:min-h-0 min-h-[500px]">
+            <div className="glass-panel flex-1 min-h-0 overflow-hidden flex flex-col border-white/5 bg-white/[0.01] shadow-2xl">
               <LogStream />
             </div>
             
-            <div className="glass-panel p-5 space-y-4 border-white/5 bg-white/[0.01] shrink-0">
-              <div className="flex items-center gap-3">
-                <Database className="w-4 h-4 text-primary" />
-                <span className="text-[10px] font-bold tracking-widest uppercase text-white/60">Node Integrity</span>
+            <div className="glass-panel p-6 space-y-6 border-white/5 bg-white/[0.01] shrink-0 shadow-lg">
+              <div className="flex items-center gap-4">
+                <Database className="w-5 h-5 text-primary" />
+                <span className="text-[11px] font-bold tracking-[0.3em] uppercase text-white/60">Node Integrity</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {['API Layer', 'Security Mesh', 'Bio-Link'].map((node) => (
-                  <div key={node} className="flex justify-between items-center text-[9px] uppercase tracking-tighter">
-                    <span className="text-white/40">{node}</span>
+                  <div key={node} className="flex justify-between items-center text-[10px] uppercase tracking-tighter">
+                    <span className="text-white/40 font-medium">{node}</span>
                     <span className={cn("font-mono font-bold", isMutated ? "text-red-400" : "text-green-400")}>
                       {isMutated ? "DEGRADED" : "OPTIMAL"}
                     </span>
@@ -131,17 +131,17 @@ export default function CoreDashboard() {
 
           {/* Center Panel: Repository Interface */}
           <div className="lg:col-span-6 flex flex-col lg:min-h-0 min-h-[600px]">
-            <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col bg-black/40 rounded-xl border border-primary/10">
+            <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col bg-black/40 rounded-2xl border border-primary/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
               <LiveCodePanel />
               {isMutated && (
-                <div className="absolute inset-0 pointer-events-none border-2 border-red-500/20 animate-pulse-glow z-10 rounded-xl" />
+                <div className="absolute inset-0 pointer-events-none border-4 border-red-500/20 animate-pulse-glow z-10 rounded-2xl" />
               )}
             </div>
           </div>
 
           {/* Right Panel: Controls & Memory */}
-          <div className="lg:col-span-3 flex flex-col gap-6 lg:min-h-0 min-h-[500px]">
-            <div className="flex-[1.5] min-h-0 flex flex-col">
+          <div className="lg:col-span-3 flex flex-col gap-8 lg:min-h-0 min-h-[500px]">
+            <div className="flex-[1.8] min-h-0 flex flex-col">
               <MutationControls />
             </div>
 
@@ -149,21 +149,21 @@ export default function CoreDashboard() {
               <MemoryPanel />
             </div>
 
-            <div className="glass-panel p-5 space-y-4 bg-white/[0.01] border-white/5 shrink-0">
-              <div className="flex items-center gap-3">
-                <Activity className="w-4 h-4 text-primary" />
-                <span className="text-[10px] font-bold tracking-widest uppercase text-white/60">Logic Hardening</span>
+            <div className="glass-panel p-6 space-y-6 bg-white/[0.01] border-white/5 shrink-0 shadow-lg">
+              <div className="flex items-center gap-4">
+                <Activity className="w-5 h-5 text-primary" />
+                <span className="text-[11px] font-bold tracking-[0.3em] uppercase text-white/60">Logic Hardening</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 {Object.values(files).slice(0, 3).map(file => (
-                  <div key={file.name} className="flex flex-col items-center gap-1.5">
+                  <div key={file.name} className="flex flex-col items-center gap-2.5">
                     <div className={cn(
-                      "w-full h-1 rounded-full transition-colors duration-500",
+                      "w-full h-1.5 rounded-full transition-colors duration-500 shadow-sm",
                       file.status === 'reinforced' ? "bg-green-500" :
                       file.status === 'degraded' ? "bg-red-500" :
                       file.status === 'patched' ? "bg-blue-400" : "bg-white/10"
                     )} />
-                    <span className="text-[7px] uppercase text-white/40 font-bold truncate w-full text-center tracking-tighter">{file.name}</span>
+                    <span className="text-[8px] uppercase text-white/40 font-bold truncate w-full text-center tracking-tighter">{file.name}</span>
                   </div>
                 ))}
               </div>
@@ -180,13 +180,13 @@ export default function CoreDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md p-4 md:p-8 lg:p-12 flex items-center justify-center"
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl p-6 md:p-12 lg:p-20 flex items-center justify-center"
           >
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full h-full max-w-[1600px] relative"
+              exit={{ scale: 0.98, opacity: 0 }}
+              className="w-full h-full max-w-[1700px] relative"
             >
               <LiveCodePanel isFullScreen onClose={() => setShowCodeOverlay(false)} />
             </motion.div>
