@@ -25,6 +25,7 @@ export interface SystemEvent {
   mutationType?: MutationType;
   stage?: 'detection' | 'response' | 'learning' | 'idle';
   targetFile?: string;
+  affectedFiles?: string[];
 }
 
 export type MutationType = 
@@ -144,106 +145,164 @@ const INITIAL_FILES: Record<string, RepoFile> = {
   }
 };
 
-const MUTATION_PATCHES: Record<MutationType, { file: string, added: CodeLine[], removedIds: string[] }> = {
-  SQL_INJECTION: {
-    file: 'models.py',
-    removedIds: [],
-    added: [
-      { id: 'sqli-1', text: '    @staticmethod', type: 'added' },
-      { id: 'sqli-2', text: '    def safe_find_by_email(email):', type: 'added' },
-      { id: 'sqli-3', text: '        # Parameterized query enforcement', type: 'added' },
-      { id: 'sqli-4', text: '        return User.query.filter_by(email=email).first()', type: 'added' },
-    ]
-  },
-  XSS: {
-    file: 'firewall.py',
-    removedIds: [],
-    added: [
-      { id: 'xss-1', text: 'def secure_headers(response):', type: 'added' },
-      { id: 'xss-2', text: '    response.headers["X-Content-Type-Options"] = "nosniff"', type: 'added' },
-      { id: 'xss-3', text: '    response.headers["X-Frame-Options"] = "DENY"', type: 'added' },
-      { id: 'xss-4', text: '    response.headers["X-XSS-Protection"] = "1; mode=block"', type: 'added' },
-      { id: 'xss-5', text: '    return response', type: 'added' },
-    ]
-  },
-  CSRF: {
-    file: 'firewall.py',
-    removedIds: [],
-    added: [
-      { id: 'csrf-1', text: 'def validate_csrf():', type: 'added' },
-      { id: 'csrf-2', text: '    token = request.headers.get("X-CSRF-Token")', type: 'added' },
-      { id: 'csrf-3', text: '    if not token or not verify_csrf(token):', type: 'added' },
-      { id: 'csrf-4', text: '        abort(403, "CSRF Token missing or invalid")', type: 'added' },
-    ]
-  },
-  DDOS: {
-    file: 'firewall.py',
-    removedIds: ['f15', 'f16', 'f17'],
-    added: [
-      { id: 'redis-1', text: 'import redis', type: 'added' },
-      { id: 'redis-2', text: 'r = redis.Redis.from_url(current_app.config["REDIS_URL"])', type: 'added' },
-      { id: 'redis-3', text: '', type: 'added' },
-      { id: 'redis-4', text: 'def rate_limit():', type: 'added' },
-      { id: 'redis-5', text: '    ip = get_ip()', type: 'added' },
-      { id: 'redis-6', text: '    key = f"rate:{ip}"', type: 'added' },
-      { id: 'redis-7', text: '    count = r.incr(key)', type: 'added' },
-      { id: 'redis-8', text: '    if count == 1: r.expire(key, 60)', type: 'added' },
-      { id: 'redis-9', text: '    if count > 100: abort(429, "Too many requests")', type: 'added' },
-    ]
-  },
-  BOT_SWARM: {
-    file: 'firewall.py',
-    removedIds: [],
-    added: [
-      { id: 'bot-1', text: 'def detect_bot_signature():', type: 'added' },
-      { id: 'bot-2', text: '    ua = request.headers.get("User-Agent")', type: 'added' },
-      { id: 'bot-3', text: '    if "headless" in ua.lower() or "phantomjs" in ua.lower():', type: 'added' },
-      { id: 'bot-4', text: '        BLOCKED_IPS.add(get_ip())', type: 'added' },
-      { id: 'bot-5', text: '        abort(403, "Bot Signature Detected")', type: 'added' },
-    ]
-  },
-  API_ABUSE: {
-    file: 'config.py',
-    removedIds: ['c8'],
-    added: [
-      { id: 'api-1', text: '    # Tightened Rate Limit for API Abuse Prevention', type: 'added' },
-      { id: 'api-2', text: '    RATE_LIMIT = 20', type: 'added' },
-      { id: 'api-3', text: '    API_QUOTA_PER_HOUR = 1000', type: 'added' },
-    ]
-  },
-  ZERO_DAY: {
-    file: 'routes.py',
-    removedIds: [],
-    added: [
-      { id: 'zd-1', text: 'from .roles import require_role', type: 'added' },
-      { id: 'zd-2', text: '', type: 'added' },
-      { id: 'zd-3', text: '@bp.route("/admin/emergency_shutdown", methods=["POST"])', type: 'added' },
-      { id: 'zd-4', text: '@require_role("admin")', type: 'added' },
-      { id: 'zd-5', text: 'def zero_day_lockdown():', type: 'added' },
-      { id: 'zd-6', text: '    current_app.config["MAINTENANCE_MODE"] = True', type: 'added' },
-      { id: 'zd-7', text: '    return jsonify({"status": "CORE_LOCKED"})', type: 'added' },
-    ]
-  },
-  RANSOMWARE: {
-    file: 'firewall.py',
-    removedIds: [],
-    added: [
-      { id: 'rw-1', text: 'def validate_payload():', type: 'added' },
-      { id: 'rw-2', text: '    if request.content_length and request.content_length > 10_000:', type: 'added' },
-      { id: 'rw-3', text: '        abort(413, "Payload too large - Possible encryption flood")', type: 'added' },
-    ]
-  },
-  DATA_EXFIL: {
-    file: 'auth.py',
-    removedIds: [],
-    added: [
-      { id: 'ex-1', text: 'def monitor_exfiltration():', type: 'added' },
-      { id: 'ex-2', text: '    # Monitor unusual token activity', type: 'added' },
-      { id: 'ex-3', text: '    if get_token_usage_count(get_current_user()) > 50:', type: 'added' },
-      { id: 'ex-4', text: '        revoke_token(request.headers.get("Authorization"))', type: 'added' },
-      { id: 'ex-5', text: '        abort(401, "Unusual data access patterns detected")', type: 'added' },
-    ]
-  }
+interface FilePatch {
+  file: string;
+  added: CodeLine[];
+  removedIds: string[];
+}
+
+const MUTATION_PATCHES: Record<MutationType, FilePatch[]> = {
+  SQL_INJECTION: [
+    {
+      file: 'models.py',
+      removedIds: [],
+      added: [
+        { id: 'sqli-1', text: '    @staticmethod', type: 'added' },
+        { id: 'sqli-2', text: '    def safe_find_by_email(email):', type: 'added' },
+        { id: 'sqli-3', text: '        # Use bind parameters to prevent SQLi', type: 'added' },
+        { id: 'sqli-4', text: '        return User.query.filter_by(email=email).first()', type: 'added' },
+      ]
+    },
+    {
+      file: 'routes.py',
+      removedIds: ['r10'],
+      added: [
+        { id: 'sqli-5', text: '    # Switched to hardened search method', type: 'added' },
+        { id: 'sqli-6', text: '    user = User.safe_find_by_email(data.get("email"))', type: 'added' },
+      ]
+    }
+  ],
+  XSS: [
+    {
+      file: 'firewall.py',
+      removedIds: [],
+      added: [
+        { id: 'xss-1', text: 'def secure_headers(response):', type: 'added' },
+        { id: 'xss-2', text: '    response.headers["X-Content-Type-Options"] = "nosniff"', type: 'added' },
+        { id: 'xss-3', text: '    response.headers["X-Frame-Options"] = "DENY"', type: 'added' },
+        { id: 'xss-4', text: '    response.headers["X-XSS-Protection"] = "1; mode=block"', type: 'added' },
+        { id: 'xss-5', text: '    return response', type: 'added' },
+      ]
+    },
+    {
+      file: 'routes.py',
+      removedIds: [],
+      added: [
+        { id: 'xss-6', text: 'from .firewall import secure_headers', type: 'added' },
+        { id: 'xss-7', text: '', type: 'added' },
+        { id: 'xss-8', text: '@bp.after_request', type: 'added' },
+        { id: 'xss-9', text: 'def apply_xss_protection(response):', type: 'added' },
+        { id: 'xss-10', text: '    return secure_headers(response)', type: 'added' },
+      ]
+    }
+  ],
+  CSRF: [
+    {
+      file: 'firewall.py',
+      removedIds: [],
+      added: [
+        { id: 'csrf-1', text: 'def validate_csrf():', type: 'added' },
+        { id: 'csrf-2', text: '    token = request.headers.get("X-CSRF-Token")', type: 'added' },
+        { id: 'csrf-3', text: '    if not token or not verify_csrf(token):', type: 'added' },
+        { id: 'csrf-4', text: '        abort(403, "CSRF Token missing or invalid")', type: 'added' },
+      ]
+    },
+    {
+      file: 'config.py',
+      removedIds: [],
+      added: [
+        { id: 'csrf-5', text: '    WTF_CSRF_ENABLED = True', type: 'added' },
+        { id: 'csrf-6', text: '    CSRF_TIME_LIMIT = 3600', type: 'added' },
+      ]
+    }
+  ],
+  DDOS: [
+    {
+      file: 'firewall.py',
+      removedIds: ['f15', 'f16', 'f17'],
+      added: [
+        { id: 'redis-1', text: 'import redis', type: 'added' },
+        { id: 'redis-2', text: 'r = redis.Redis.from_url(current_app.config["REDIS_URL"])', type: 'added' },
+        { id: 'redis-3', text: '', type: 'added' },
+        { id: 'redis-4', text: 'def rate_limit():', type: 'added' },
+        { id: 'redis-5', text: '    ip = get_ip()', type: 'added' },
+        { id: 'redis-6', text: '    key = f"rate:{ip}"', type: 'added' },
+        { id: 'redis-7', text: '    count = r.incr(key)', type: 'added' },
+        { id: 'redis-8', text: '    if count == 1: r.expire(key, 60)', type: 'added' },
+        { id: 'redis-9', text: '    if count > 100: abort(429, "Too many requests")', type: 'added' },
+      ]
+    },
+    {
+      file: 'config.py',
+      removedIds: [],
+      added: [
+        { id: 'redis-10', text: '    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")', type: 'added' },
+      ]
+    }
+  ],
+  BOT_SWARM: [
+    {
+      file: 'firewall.py',
+      removedIds: [],
+      added: [
+        { id: 'bot-1', text: 'def detect_bot_signature():', type: 'added' },
+        { id: 'bot-2', text: '    ua = request.headers.get("User-Agent")', type: 'added' },
+        { id: 'bot-3', text: '    if "headless" in ua.lower() or "phantomjs" in ua.lower():', type: 'added' },
+        { id: 'bot-4', text: '        BLOCKED_IPS.add(get_ip())', type: 'added' },
+        { id: 'bot-5', text: '        abort(403, "Bot Signature Detected")', type: 'added' },
+      ]
+    }
+  ],
+  API_ABUSE: [
+    {
+      file: 'config.py',
+      removedIds: ['c8'],
+      added: [
+        { id: 'api-1', text: '    # Tightened Rate Limit for API Abuse Prevention', type: 'added' },
+        { id: 'api-2', text: '    RATE_LIMIT = 20', type: 'added' },
+        { id: 'api-3', text: '    API_QUOTA_PER_HOUR = 1000', type: 'added' },
+      ]
+    }
+  ],
+  ZERO_DAY: [
+    {
+      file: 'routes.py',
+      removedIds: [],
+      added: [
+        { id: 'zd-1', text: 'from .roles import require_role', type: 'added' },
+        { id: 'zd-2', text: '', type: 'added' },
+        { id: 'zd-3', text: '@bp.route("/admin/emergency_shutdown", methods=["POST"])', type: 'added' },
+        { id: 'zd-4', text: '@require_role("admin")', type: 'added' },
+        { id: 'zd-5', text: 'def zero_day_lockdown():', type: 'added' },
+        { id: 'zd-6', text: '    current_app.config["MAINTENANCE_MODE"] = True', type: 'added' },
+        { id: 'zd-7', text: '    return jsonify({"status": "CORE_LOCKED"})', type: 'added' },
+      ]
+    }
+  ],
+  RANSOMWARE: [
+    {
+      file: 'firewall.py',
+      removedIds: [],
+      added: [
+        { id: 'rw-1', text: 'def validate_payload():', type: 'added' },
+        { id: 'rw-2', text: '    if request.content_length and request.content_length > 10_000:', type: 'added' },
+        { id: 'rw-3', text: '        abort(413, "Payload too large - Possible encryption flood")', type: 'added' },
+      ]
+    }
+  ],
+  DATA_EXFIL: [
+    {
+      file: 'auth.py',
+      removedIds: [],
+      added: [
+        { id: 'ex-1', text: 'def monitor_exfiltration():', type: 'added' },
+        { id: 'ex-2', text: '    # Monitor unusual token activity', type: 'added' },
+        { id: 'ex-3', text: '    if get_token_usage_count(get_current_user()) > 50:', type: 'added' },
+        { id: 'ex-4', text: '        revoke_token(request.headers.get("Authorization"))', type: 'added' },
+        { id: 'ex-5', text: '        abort(401, "Unusual data access patterns detected")', type: 'added' },
+      ]
+    }
+  ]
 };
 
 class GeneSysEngine {
@@ -283,75 +342,89 @@ class GeneSysEngine {
   }
 
   async simulateMutation(type: MutationType) {
-    const patchInfo = MUTATION_PATCHES[type] || MUTATION_PATCHES.SQL_INJECTION;
+    const patches = MUTATION_PATCHES[type] || [];
+    if (patches.length === 0) return;
+
+    const affectedFiles = patches.map(p => p.file);
     
-    // Stage 1: Detection
+    // Stage 1: Detection (All files)
     this.emit({ 
       type: 'stage', 
-      message: `SCANNED_VECTOR: [${type}] Analyzing heuristic divergence...`, 
+      message: `SCANNED_VECTOR: [${type}] Analyzing cross-script anomalies...`, 
       mutationType: type,
       stage: 'detection',
-      targetFile: patchInfo.file
+      affectedFiles,
+      targetFile: affectedFiles[0]
     });
     
-    this.updateFile(patchInfo.file, { status: 'degraded' });
+    affectedFiles.forEach(file => {
+      this.updateFile(file, { status: 'degraded' });
+    });
 
     await new Promise(r => setTimeout(r, 1200));
 
-    // Stage 2: Response (Surgical Diffing)
+    // Stage 2: Response (Apply Diffs in Parallel)
     this.emit({ 
       type: 'stage', 
-      message: `GENESIS_ENGINE: Injecting autonomous antibodies into ${patchInfo.file}...`, 
+      message: `GENESIS_ENGINE: Injecting multi-script antibodies into system nodes...`, 
       mutationType: type,
       stage: 'response',
-      targetFile: patchInfo.file
+      affectedFiles,
+      targetFile: affectedFiles[0]
     });
 
-    const currentFile = this.files[patchInfo.file];
-    
-    let newLines: CodeLine[] = [];
-    currentFile.lines.forEach(line => {
-      if (patchInfo.removedIds.includes(line.id)) {
-        newLines.push({ ...line, type: 'removed' as const });
-      } else {
-        newLines.push(line);
-      }
-    });
+    patches.forEach(patch => {
+      const currentFile = this.files[patch.file];
+      if (!currentFile) return;
 
-    const insertIdx = Math.max(0, newLines.findIndex(l => l.type === 'removed') || newLines.length - 1);
-    newLines.splice(insertIdx + 1, 0, ...patchInfo.added);
+      let newLines: CodeLine[] = [];
+      currentFile.lines.forEach(line => {
+        if (patch.removedIds.includes(line.id)) {
+          newLines.push({ ...line, type: 'removed' as const });
+        } else {
+          newLines.push(line);
+        }
+      });
 
-    this.updateFile(patchInfo.file, { 
-      lines: newLines, 
-      status: 'patched',
-      lastCommit: `hotpatch_${type.toLowerCase().slice(0, 10)}`
+      const insertIdx = Math.max(0, newLines.findIndex(l => l.type === 'removed') || newLines.length - 1);
+      newLines.splice(insertIdx + 1, 0, ...patch.added);
+
+      this.updateFile(patch.file, { 
+        lines: newLines, 
+        status: 'patched',
+        lastCommit: `hotpatch_${type.toLowerCase().slice(0, 10)}`
+      });
     });
 
     await new Promise(r => setTimeout(r, 1800));
 
-    // Stage 3: Learning
+    // Stage 3: Learning (Reinforce All)
     this.emit({ 
       type: 'stage', 
-      message: `HEALED: Reinforcing structural integrity. Immunity committed to genetic memory.`, 
+      message: `HEALED: Reinforcing structural integrity across ${affectedFiles.length} files.`, 
       mutationType: type,
       stage: 'learning',
-      targetFile: patchInfo.file
+      affectedFiles,
+      targetFile: affectedFiles[0]
     });
     
-    const reinforcedLines = newLines
-      .filter(l => l.type !== 'removed')
-      .map(l => (l.type === 'added') ? { ...l, type: 'modified' as const } : l);
+    patches.forEach(patch => {
+      const fileObj = this.files[patch.file];
+      const reinforcedLines = fileObj.lines
+        .filter(l => l.type !== 'removed')
+        .map(l => (l.type === 'added') ? { ...l, type: 'modified' as const } : l);
 
-    this.updateFile(patchInfo.file, { 
-      status: 'reinforced',
-      lines: reinforcedLines
+      this.updateFile(patch.file, { 
+        status: 'reinforced',
+        lines: reinforcedLines
+      });
     });
 
     const antibodyId = `ABS-${type.slice(0, 3)}-${Math.floor(Math.random() * 9000 + 1000)}`;
     this.memory[type] = antibodyId;
     
     await new Promise(r => setTimeout(r, 800));
-    this.emit({ type: 'success', message: `CORE_STABLE: Node recovered. Active defense pattern stored.`, stage: 'idle' });
+    this.emit({ type: 'success', message: `CORE_STABLE: Cross-node recovery complete. Active defense pattern stored.`, stage: 'idle' });
   }
 }
 
