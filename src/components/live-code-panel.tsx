@@ -41,7 +41,7 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
   useEffect(() => {
     if (scrollRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 300;
       
       if (isNearBottom || currentStage !== 'idle') {
         scrollRef.current.scrollTo({
@@ -163,7 +163,7 @@ export function LiveCodePanel({ isFullScreen, onClose }: LiveCodePanelProps) {
                   initial={{ opacity: 0, x: -5 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.3, delay: idx * 0.01 }}
+                  transition={{ duration: 0.3 }}
                   className={cn(
                     "flex gap-4 group hover:bg-white/[0.01] py-0.5 border-l-2 transition-colors",
                     line.type === 'added' ? "border-emerald-500/40 bg-emerald-500/[0.03]" :
